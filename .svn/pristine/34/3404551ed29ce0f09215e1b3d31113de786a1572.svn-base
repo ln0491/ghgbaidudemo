@@ -1,0 +1,13 @@
+package com.ghg.tobacco.bean;
+
+/**
+ * Created by yicen.wang on 2016/5/24.
+ */
+public class Car {
+    public String departure;
+    public String destination;
+    public String driverName;
+    public String driverMobile;
+    public String license;//牌照
+    public String entityName;//百度登记entity名称，其唯一标识 entity_name
+}

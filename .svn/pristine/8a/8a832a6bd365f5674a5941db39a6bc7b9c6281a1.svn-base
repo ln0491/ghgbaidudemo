@@ -1,0 +1,68 @@
+package com.ghg.tobacco.ui;
+
+import android.view.View;
+
+import com.baidu.mapapi.map.MapView;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+
+/**
+ * @author $Author
+ * @version $Rev$
+ * @time 2016/5/16 11:09
+ * @des ${TODO}
+ * @updateAuthor $Author$
+ * @updateDate $Date$
+ * @updateDes ${TODO}
+ */
+public class BusinessCompanyActivity extends BaseActivity {
+    private MapView mMapView;
+    @Override
+    public int bindLayout() {
+        return R.layout
+                .activity_business_company;
+    }
+
+    @Override
+    public void initView() {
+        setBtnBack();
+        mMapView=findViewId(R.id.mapView);
+    }
+
+    @Override
+    public void initListener() {
+
+    }
+
+    @Override
+    public void initData() {
+
+    }
+
+    @Override
+    public void resume() {
+        mMapView.onResume();
+
+    }
+
+    @Override
+    public void pause() {
+        mMapView.onPause();
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+        mMapView.onDestroy();
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+}

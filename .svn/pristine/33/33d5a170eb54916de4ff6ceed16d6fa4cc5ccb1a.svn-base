@@ -1,0 +1,418 @@
+package com.ghg.tobacco.fragment;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+
+import com.ghg.tobacco.GetStaticData;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.ui.ReportDetailActivity;
+import com.ghg.tobacco.utils.ResUtils;
+import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.renderer.LineChartRenderer;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * to handle interaction events.
+ * Use the {@link ReportFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class ReportFragment extends Fragment implements View.OnClickListener{
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
+    private View mView;
+    private RadioButton rb_month, rb_year;
+    private LineChart mChart;
+    private TextView tvMonth,tvDay;
+    private TextView tv_check_nums;
+    private RadioGroup mRadioGroup;
+    private String[]months;
+    private int[] mColors ;
+    private int[]mBarColors;
+    private HorizontalBarChart mAreaHorizontalBarChart;
+    private HorizontalBarChart mShopHorizontalBarChart;
+    private Button btn_detail;
+
+    public ReportFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment InspectionFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static ReportFragment newInstance(String param1, String param2) {
+        ReportFragment fragment = new ReportFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        mView=inflater.inflate(R.layout.fragment_report, container, false);
+        months=new String[]{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+        initView();
+        //初始化折线图
+        initialChart(mChart);
+        //初始化被举报区域水平柱状图
+        initHorizontalBarChart(mAreaHorizontalBarChart);
+        //初始化被举报商店水平柱状图
+        initHorizontalBarChart(mShopHorizontalBarChart);
+        rb_month.setChecked(true);
+        return mView;
+    }
+
+
+    private void initData(ResponseReport checkData) {
+        Log.d("vivi","Date="+checkData.date);
+        String[]date=checkData.date.split("-");
+        tvMonth.setText(String.valueOf(months[Integer.parseInt(date[0])-1]));
+        tvDay.setText(String.valueOf(date[1]));
+        tv_check_nums.setText(String.valueOf(checkData.report));
+    }
+
+    private void initView() {
+        btn_detail= (Button) mView.findViewById(R.id.btn_detail);
+        mRadioGroup= (RadioGroup) mView.findViewById(R.id.radioGroup);
+        mChart = (LineChart) mView.findViewById(R.id.lineChart);
+        mAreaHorizontalBarChart = (HorizontalBarChart) mView.findViewById(R.id.horizontalBarChart);
+        mShopHorizontalBarChart = (HorizontalBarChart) mView.findViewById(R.id.horizontalBarChartShop);
+        rb_month = (RadioButton) mView.findViewById(R.id.rb_month);
+        rb_year = (RadioButton) mView.findViewById(R.id.rb_year);
+        tv_check_nums= (TextView) mView.findViewById(R.id.tv_check_nums);
+        tvMonth= (TextView) mView.findViewById(R.id.tv_month);
+        tvDay= (TextView) mView.findViewById(R.id.tv_day);
+        initListener();
+
+    }
+
+    private void initListener() {
+
+        btn_detail.setOnClickListener(this);
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                ResponseReport checkData=null;
+                switch (checkedId){
+                    case R.id.rb_month:
+                        checkData= Data.getResReport(GetStaticData.TYPE_MONTH);
+                        initData(checkData);
+                        setLineData(checkData);
+                        setBarData(GetStaticData.TYPE_MONTH);
+                        break;
+                    case R.id.rb_year:
+                        checkData= Data.getResReport(GetStaticData.TYPE_YEAR);
+                        setLineData(checkData);
+
+                        setBarData(GetStaticData.TYPE_YEAR);
+                        break;
+                }
+
+            }
+        });
+    }
+
+
+    // 初始化折线图表
+    private void initialChart(LineChart mChart) {
+        mColors = new int[]{
+                getResources().getColor( R.color.color_blue),
+                getResources().getColor(R.color.color_f9435c),
+                getResources().getColor( R.color.color_fdbc3b),
+        };
+        mChart.setDescription("");
+
+        mChart.setNoDataTextDescription("暂无数据");
+        mChart.setTouchEnabled(true);
+        // 可拖曳
+        mChart.setDragEnabled(true);
+
+        // 可缩放
+        mChart.setScaleEnabled(true);
+        mChart.setDrawGridBackground(false);
+        mChart.setPinchZoom(true);
+
+        // 设置图表的背景颜色
+        mChart.setBackgroundColor(getResources().getColor(R.color.color_transparent));
+
+        // 图表的注解(只有当数据集存在时候才生效)
+        Legend l = mChart.getLegend();
+        // 线性，也可是圆
+        l.setForm(Legend.LegendForm.CIRCLE);
+        // 可以修改图表注解部分的位置
+        l.setPosition(Legend.LegendPosition.ABOVE_CHART_RIGHT);
+        // 图表的注解的字体颜色
+        l.setTextColor(getResources().getColor(R.color.color_969696));
+        // x坐标轴
+        XAxis xl = mChart.getXAxis();
+        xl.setTextColor(getResources().getColor(R.color.color_969696));
+        xl.setAvoidFirstLastClipping(true);
+
+        // 几个x坐标轴之间才绘制？
+        xl.setSpaceBetweenLabels(1);
+        xl.setDrawAxisLine(false);
+
+        // 如果false，那么x坐标轴将不可见
+        xl.setEnabled(true);
+        xl.setSelectedIndex(0);
+        // 将X坐标轴放置在底部，默认是在底部。
+        xl.setPosition(XAxis.XAxisPosition.BOTTOM);
+//        xl.setGridColor(
+//                getResources().getColor(R.color.color_transparent));
+        // 图表左边的y坐标轴线
+        YAxis leftAxis = mChart.getAxisLeft();
+        leftAxis.setTextColor(getResources().getColor(R.color.color_969696));
+//        leftAxis.setGridColor(
+//                getResources().getColor(R.color.color_transparent));
+
+//        隐藏左边坐标轴横网格线
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setGridColor(getResources().getColor(R.color.color_3f969696));
+        //隐藏右边坐标轴横网格线
+        mChart.getAxisRight().setDrawGridLines(false);
+        //隐藏X轴竖网格线
+        xl.setDrawGridLines(false);
+        //隐藏左边Y轴
+        leftAxis.setDrawAxisLine(false);
+        leftAxis.setEnabled(true);
+//        // 最大值
+//        leftAxis.setAxisMaxValue(Integer.MAX_VALUE);
+//        // 最小值
+//        leftAxis.setAxisMinValue(0f);
+        // 不一定要从0开始
+//        leftAxis.setStartAtZero(false);
+//        leftAxis.setDrawGridLines(true);
+
+        YAxis rightAxis = mChart.getAxisRight();
+        // 不显示图表的右边y坐标轴线
+        rightAxis.setEnabled(false);
+    }
+
+
+    /**
+     * 初始化水平柱状图
+     */
+    private void initHorizontalBarChart(HorizontalBarChart mHorizontalBarChart){
+        if (mBarColors==null){
+            mBarColors = new int[]{
+                    ResUtils.getColor(getActivity(),R.color.color_f9435c),
+                    ResUtils.getColor(getActivity(),R.color.color_ff9b2c),
+                    ResUtils.getColor(getActivity(),R.color.color_9083bb),
+                    ResUtils.getColor(getActivity(),R.color.color_83b4c3),
+                    ResUtils.getColor(getActivity(),R.color.color_d360c7),
+            };
+        }
+
+        mHorizontalBarChart.setDrawBarShadow(false);
+        mHorizontalBarChart.setDrawValueAboveBar(true);
+        mHorizontalBarChart.setDescription("");
+
+        // if more than 60 entries are displayed in the chart, no values will be
+        // drawn
+//        mHorizontalBarChart.setMaxVisibleValueCount(60);
+        // scaling can now only be done on x- and y-axis separately
+        mHorizontalBarChart.setPinchZoom(false);
+        // draw shadows for each bar that show the maximum value
+        // mChart.setDrawBarShadow(true);
+        // mChart.setDrawXLabels(false);
+        mHorizontalBarChart.setDrawGridBackground(false);
+        // mChart.setDrawYLabels(false);
+        //设置不能缩放
+        mHorizontalBarChart.setScaleEnabled(false);
+        XAxis xl = mHorizontalBarChart.getXAxis();
+        xl.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xl.setDrawAxisLine(false);
+        xl.setDrawGridLines(false);
+        xl.setGridLineWidth(0f);
+        xl.setTextColor(ResUtils.getColor(getActivity(),R.color.color_323232));
+        xl.setTextSize(15);
+        YAxis yl = mHorizontalBarChart.getAxisLeft();
+        yl.setDrawAxisLine(false);
+        yl.setDrawGridLines(false);
+        yl.setGridLineWidth(0f);
+//        yl.setAxisMinValue(0f); // this replaces setStartAtZero(true)
+//        yl.setTextColor(ResUtils.getColor(getActivity(),R.color.color_blue));
+//        yl.setInverted(true);
+        yl.setEnabled(false);
+        YAxis yr = mHorizontalBarChart.getAxisRight();
+        yr.setDrawAxisLine(true);
+        yr.setDrawGridLines(false);
+        yr.setAxisMinValue(0f); // this replaces setStartAtZero(true)
+        yr.setDrawAxisLine(false);
+        yr.setEnabled(false);
+        Legend l = mHorizontalBarChart.getLegend();
+        l.setEnabled(false);
+
+        mHorizontalBarChart.setRoundRadius(30);
+    }
+
+
+
+    private  void setLineData(ResponseReport checkData){
+        ArrayList<String> xVals = new ArrayList<String>();
+        ReportStatistics statistics=checkData.statistics;
+        List<String> xLabel=statistics.label;
+        List<Integer>checks=statistics.report;
+        for (int i = 0; i < xLabel.size(); i++) {
+            xVals.add((xLabel.get(i)));
+        }
+
+        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        ArrayList<Entry> values = new ArrayList<Entry>();
+        //稽查
+        for (int i = 0; i < xLabel.size(); i++) {
+            values.add(new Entry((float) checks.get(i), i));
+        }
+
+        LineDataSet d = new LineDataSet(values, getResources().getString(R.string.report_count));
+        d.setLineWidth(1f);
+        d.setCircleRadius(4f);
+        int color = mColors[0];
+        d.setColor(color);
+        d.setCircleColor(color);
+        d.setValueTextColor(color);
+        d.setValueTextSize(12);
+        dataSets.add(d);
+        LineData data = new LineData(xVals, dataSets);
+        mChart.setData(data);
+        mChart.animateX(500);
+        mChart.invalidate();
+
+        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+                XAxis mXAxis=mChart.getXAxis();
+                if (mXAxis.getSelectedIndex()!=e.getXIndex()) {
+                    mXAxis.setSelectedIndex(e.getXIndex());
+                    LineChartRenderer mRenderer =  mChart.getDataRenderer();
+                    mRenderer.setSelectedIndex(mXAxis.getSelectedIndex());
+                    mChart.invalidate();
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
+    }
+
+
+
+    private void setBarData(int type) {
+        ResponseReportTop5 responseReportTop5=Data.getResReportTop5(type,0);
+        ReportStatistics reportStatisticsArea=responseReportTop5.reportArea;
+        ReportStatistics  reportStatisticsShop= responseReportTop5.reportShop;
+
+        //被举报区域
+        List<String> values= getXAxisValues(reportStatisticsArea.label);
+        List<IBarDataSet> dataSets= getDataSet(reportStatisticsArea.report);
+        BarData barData=new BarData(values,dataSets);
+        barData.setHighlightEnabled(false);
+        mAreaHorizontalBarChart.setData(barData);
+        mAreaHorizontalBarChart.animateY(1000);
+        //被举报商店
+        List<String> valuesAShop= getXAxisValues(reportStatisticsShop.label);
+        List<IBarDataSet> dataSetsShop= getDataSet(reportStatisticsShop.report);
+        BarData barDataShop=new BarData(valuesAShop,dataSetsShop);
+        mShopHorizontalBarChart.setData(barDataShop);
+        mShopHorizontalBarChart.animateY(1000);
+
+
+    }
+
+    private List<IBarDataSet> getDataSet(List<Integer> datas) {
+        ArrayList<IBarDataSet> dataSets = null;
+        ArrayList<BarEntry> valueSet = new ArrayList<>();
+        for (int i=0;i<datas.size();i++){
+            BarEntry barEntry = new BarEntry(datas.get(i), i);
+            valueSet.add(barEntry);
+        }
+
+        BarDataSet barDataSet= new BarDataSet(valueSet,"");
+//        barDataSet.setBarBorderWidth(20);
+        barDataSet.setValueTextColor(ResUtils.getColor(getActivity(),R.color.color_969696));
+        barDataSet.setValueTextSize(12);
+        barDataSet.setColors(mBarColors);
+
+        dataSets = new ArrayList<>();
+        dataSets.add(barDataSet);
+        return dataSets;
+    }
+
+    /**
+     * 获取x轴数据
+     * @param labels
+     * @return
+     */
+    private List<String> getXAxisValues(List<String>labels) {
+        ArrayList<String> xAxis = new ArrayList<>();
+        for (int i=0;i<labels.size();i++){
+            xAxis.add(labels.get(i));
+        }
+        return xAxis;
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_detail:
+                Intent intent=new Intent(getActivity(), ReportDetailActivity.class);
+                startActivity(intent);
+                break;
+        }
+    }
+}

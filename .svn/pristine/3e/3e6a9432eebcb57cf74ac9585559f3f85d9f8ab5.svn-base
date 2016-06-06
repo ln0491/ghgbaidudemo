@@ -1,0 +1,54 @@
+package com.ghg.tobacco.ui;
+
+import android.view.View;
+
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+
+public class BusinessDetailActivity extends BaseActivity {
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_business_detail;
+    }
+
+    @Override
+    public void initView() {
+
+    }
+
+    @Override
+    public void initListener() {
+
+    }
+
+    @Override
+    public void initData() {
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+}

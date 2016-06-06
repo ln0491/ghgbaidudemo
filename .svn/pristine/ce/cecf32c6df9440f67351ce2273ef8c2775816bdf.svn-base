@@ -1,0 +1,228 @@
+package com.ghg.tobacco.ui;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.fragment.BigDataIndustryFragment;
+import com.ghg.tobacco.fragment.BigDataInspectionFragment;
+import com.ghg.tobacco.fragment.InspectionFragment;
+import com.ghg.tobacco.fragment.ReportFragment;
+import com.ghg.tobacco.utils.UnitUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 大数据
+ */
+public class BigDataActivity extends BaseActivity{
+
+
+    private ViewPager mViewPager;
+    //导航
+    private ImageView tabImage;
+    //tab导航
+    private TextView tabIndustry,tabBusinessCompany,tabBusiness,tabInspection;
+    //tab宽
+    private  int tabWith;
+    //屏幕的宽
+    private   int screenWidth;
+
+    private Class<? extends Fragment>[] mFragments = new Class[]{BigDataIndustryFragment.class, InspectionFragment.class, InspectionFragment.class,
+            BigDataInspectionFragment.class};
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_big_data;
+    }
+
+    @Override
+    public void initView() {
+
+        setBtnBack();
+        setTitle(getResources().getString(R.string.big_data_Kanban));
+        mViewPager=findViewId(R.id.viewPager);
+        tabImage=findViewId(R.id.tabImage);
+
+        tabIndustry=findViewId(R.id.tv_tab_industry);
+        tabBusinessCompany=findViewId(R.id.tv_tab_business_company);
+        tabBusiness=findViewId(R.id.tv_tab_business);
+        tabInspection=findViewId(R.id.tv_tab_inspection);
+
+        Bitmap bitmap=BitmapFactory.decodeResource(getResources(),R.mipmap.tab_line);
+        tabWith =bitmap.getWidth();
+        screenWidth = UnitUtils.getScreenWidth(this);
+        bitmap.recycle();
+        bitmap=null;
+
+
+        initViewPager();
+
+    }
+
+
+
+    @Override
+    public void initListener() {
+        tabIndustry.setOnClickListener(this);
+        tabBusinessCompany.setOnClickListener(this);
+        tabBusiness.setOnClickListener(this);
+        tabInspection.setOnClickListener(this);
+    }
+
+    @Override
+    public void initData() {
+
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()){
+
+            case R.id.tv_tab_industry:
+                mViewPager.setCurrentItem(0);
+                break;
+            case R.id.tv_tab_business_company:
+                mViewPager.setCurrentItem(1);
+                break;
+            case R.id.tv_tab_business:
+                mViewPager.setCurrentItem(2);
+                break;
+            case R.id.tv_tab_inspection:
+                mViewPager.setCurrentItem(3);
+                break;
+        }
+    }
+
+
+    private void initViewPager() {
+
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                setTabPostiion(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        List<Fragment>fragmetns=new ArrayList<Fragment>();
+
+        for (int i = 0;i<mFragments.length;i++){
+            Fragment fragment = null;
+            try {
+                fragment = mFragments[i].newInstance();
+                fragmetns.add(fragment);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        MyAdapter mAdapter=new MyAdapter(getSupportFragmentManager(),fragmetns);
+        mViewPager.setAdapter(mAdapter);
+        mViewPager.setCurrentItem(0);
+        setTabPostiion(0);
+
+    }
+
+    /**
+     * 设置tab导航条的位置
+     * @param selectedPosition
+     */
+    private void setTabPostiion(int selectedPosition){
+
+        LinearLayout.LayoutParams mParams= (LinearLayout.LayoutParams) tabImage.getLayoutParams();
+        int leftMargin= (screenWidth/4-tabWith)/2;
+        switch (selectedPosition){
+            case 0:
+                mParams.leftMargin=leftMargin;
+                tabIndustry.setSelected(true);
+                tabBusinessCompany.setSelected(false);
+                tabBusiness.setSelected(false);
+                tabInspection.setSelected(false);
+            break;
+            case 1:
+                mParams.leftMargin=leftMargin+screenWidth/4;
+                tabIndustry.setSelected(false);
+                tabBusinessCompany.setSelected(true);
+                tabBusiness.setSelected(false);
+                tabInspection.setSelected(false);
+                break;
+            case 2:
+                mParams.leftMargin=leftMargin+screenWidth/4*2;
+                tabIndustry.setSelected(false);
+                tabBusinessCompany.setSelected(false);
+                tabBusiness.setSelected(true);
+                tabInspection.setSelected(false);
+                break;
+            case 3:
+                mParams.leftMargin=leftMargin+screenWidth/4*3;
+                tabIndustry.setSelected(false);
+                tabBusinessCompany.setSelected(false);
+                tabBusiness.setSelected(false);
+                tabInspection.setSelected(true);
+                break;
+        }
+        tabImage.setLayoutParams(mParams);
+    }
+
+
+
+    class MyAdapter extends FragmentPagerAdapter{
+
+        private List<Fragment>fragments;
+        public MyAdapter(FragmentManager fm,List<Fragment>fragments) {
+            super(fm);
+            this.fragments=fragments;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return fragments.size();
+        }
+    }
+}

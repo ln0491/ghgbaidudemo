@@ -1,0 +1,494 @@
+package com.ghg.tobacco.ui;
+
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.GetStaticData;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseMapActivity;
+import com.ghg.tobacco.bean.BusinessCompany;
+import com.ghg.tobacco.custom_view.MapZoomImageView;
+import com.ghg.tobacco.utils.DialogUtils;
+import com.ghg.tobacco.utils.UnitUtils;
+
+import java.util.List;
+
+/**
+ * @author $Author
+ * @version $Rev$
+ * @time 2016/5/16 11:09
+ * @des ${TODO}
+ * @updateAuthor $Author$
+ * @updateDate $Date$
+ * @updateDes ${TODO}
+ */
+public class BusinessCompanyActivity extends BaseMapActivity {
+    private ImageView btnBack;
+    private View container_province_buy;
+    private TextView tvAddress, tvProviceCompany;
+    private TextView tv_lower_buy;//查看下级专卖局
+    private TextView tv_province_buy;//查看省专卖局
+    private int mType = 1;//当前显示的地图数据类型  1.全国数据；2，省份数据；3，某一个省份数据；4，某一个省份所有城市数据
+    private LatLng mLocationLatLng;
+    private int zoom_country = 5;
+    private int zoom_provices = 8;
+    private int zoom_provice = 10;
+    private Dialog dialog;
+    //所有省份
+    private List<BusinessCompany> mAllProvince;
+    private BusinessCompany mCountryCompany;
+    private List<BusinessCompany> mLowerCompanys;
+    private ImageView zoom_in, zoom_out, btn_location;
+    private MapZoomImageView zoom;
+    private boolean mMarkerIsAdd = false;
+    private BusinessCompany mProviceCompany;//被选中的省份
+    private String province_hunan = "430000";
+    private String province_guangdong = "440000";
+    private boolean isFirstLocation = false;
+
+    public BDLocationListener myListener = new MyLocationListener();
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    DialogUtils.loadingDialogDismiss(dialog);
+                    addCountryMark(mCountryCompany);
+                    break;
+                case 2:
+                    DialogUtils.loadingDialogDismiss(dialog);
+                    addAllProvinceMark(mAllProvince, 2);
+                    break;
+                case 3:
+                    DialogUtils.loadingDialogDismiss(dialog);
+                    if (mLowerCompanys != null && mLowerCompanys.size() != 0) {
+                        setBottomViewVisible(false);
+                        addAllProvinceMark(mLowerCompanys, 4);
+                    }
+                    break;
+
+            }
+
+        }
+    };
+
+    private RelativeLayout.LayoutParams mParams;
+
+
+    @Override
+    public int bindLayout() {
+        return R.layout
+                .activity_business_company;
+    }
+
+    @Override
+    public void initView() {
+        setTitle(getResources().getString(R.string.title_map_business));
+        setBtnMenu();
+        container_province_buy = findViewId(R.id.container_province_buy);
+
+        btnBack = findViewId(R.id.btn_back);
+        mMapView = findViewId(R.id.mapView);
+        tvAddress = findViewId(R.id.tv_address);
+        tv_province_buy = findViewId(R.id.tv_province_buy);
+        tv_lower_buy = findViewId(R.id.tv_lower_buy);
+        tvProviceCompany = findViewId(R.id.tv_province_company);
+        zoom_in = findViewId(R.id.zoom_in);
+        zoom_out = findViewId(R.id.zoom_out);
+        zoom = findViewId(R.id.zoom);
+        btn_location = findViewId(R.id.btn_location);
+        initMap();
+
+        zoom.setZoomInOut(zoom_in, zoom_out);
+        mParams = (RelativeLayout.LayoutParams) container_province_buy.getLayoutParams();
+
+    }
+
+    private void initMap() {
+        mBaiduMap = mMapView.getMap();
+        hideZoomControls();
+        hideLogo();
+        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Bundle bundle = marker.getExtraInfo();
+                if (bundle == null) {
+                    return true;
+                }
+                int type = bundle.getInt("mType");
+                if (type == 1) {//全国数据marker被点击，显示所以省份marker
+                    if (mAllProvince == null) {
+                        getAllProvince();
+                    } else {
+                        addAllProvinceMark(mAllProvince, 2);
+                    }
+                } else if (type == 2 || type == 3) {//某个省份marker被点击，显示该省份marker
+                    mProviceCompany = (BusinessCompany) bundle.getSerializable("businessCompany");
+                    //                    List<BusinessCompany> businessCompanys = new ArrayList<BusinessCompany>();
+                    //                    businessCompanys.add(mProviceCompany);
+                    //                    addAllProvinceMark(businessCompanys,3);
+                    setMapCenter(new LatLng(Double.valueOf(mProviceCompany.latitude), Double.parseDouble(mProviceCompany.longitude)));
+                    setZoom(zoom_provice);
+                    BusinessCompanyActivity.this.mType = 3;
+                    setBottomViewVisible(true);
+                    tvProviceCompany.setText(mProviceCompany.name);
+                    tvAddress.setText(mProviceCompany.address);
+
+                } else if (type == 4) {
+                    //进入市级公司详情页
+                    BusinessCompany mLowerCompany = (BusinessCompany) bundle.getSerializable("businessCompany");
+                    Intent intent = new Intent(BusinessCompanyActivity.this, CompanyDetailActivity.class);
+                    intent.putExtra("type", 2);
+                    intent.putExtra("company", mLowerCompany);
+                    startActivity(intent);
+                }
+                return true;
+            }
+
+
+        });
+        initLocation(myListener);
+        mLocationClient.start();
+        isFirstLocation = true;
+    }
+
+    @Override
+    public void initListener() {
+        btnBack.setOnClickListener(this);
+        tv_lower_buy.setOnClickListener(this);
+        tv_province_buy.setOnClickListener(this);
+        btn_location.setOnClickListener(this);
+        zoom.setOnClickListener(new MapZoomImageView.OnClickListener() {
+            @Override
+            public void zoomInClick() {
+                zoomIn();
+            }
+
+            @Override
+            public void zoomOutClick() {
+                zoomOut();
+            }
+        });
+    }
+
+    @Override
+    public void initData() {
+        getTotalProvince();
+
+    }
+
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+        mHandler.removeMessages(1);
+        mHandler.removeMessages(2);
+        mHandler.removeMessages(3);
+        if (GetStaticData.businessCompanyCityMap != null) {
+            GetStaticData.businessCompanyCityMap.clear();
+            GetStaticData.businessCompanyCityMap = null;
+        }
+        if (GetStaticData.businessCompanyProvinceList != null) {
+            GetStaticData.businessCompanyProvinceList.clear();
+            GetStaticData.businessCompanyProvinceList = null;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.btn_menu:
+                startActivity(new Intent(BusinessCompanyActivity.this, CompanyListActivity.class));
+                break;
+            case R.id.btn_back:
+                if (mType == 1) {
+                    finish();
+                } else if (mType == 2) {
+                    setBottomViewVisible(false);
+                    addCountryMark(mCountryCompany);
+                    setMapCenter(new LatLng(Double.parseDouble(mCountryCompany.latitude), Double.parseDouble(mCountryCompany.longitude)));
+                    setZoom(zoom_country);
+                } else if (mType == 3) {
+                    setBottomViewVisible(false);
+                    //                    container_province_buy.setVisibility(View.GONE);
+                    //                    addAllProvinceMark(mAllProvince,2);
+                    setZoom(zoom_provices);
+                    mType = 2;
+                } else if (mType == 4) {
+                    setBottomViewVisible(false);
+                    //                    container_province_buy.setVisibility(View.GONE);
+                    //                    addAllProvinceMark(mAllProvince,2);
+                    //                    List<BusinessCompany> companies = new ArrayList<BusinessCompany>();
+                    //                    companies.add(mProviceCompany);
+                    addAllProvinceMark(mAllProvince, 3);
+                    setBottomViewVisible(true);
+                }
+
+                break;
+
+            case R.id.tv_lower_buy:
+                getLowerCompanys(mProviceCompany.province);
+                break;
+            case R.id.tv_province_buy:
+                //进入省级公司详情页
+                Intent intent = new Intent(BusinessCompanyActivity.this, CompanyDetailActivity.class);
+                intent.putExtra("company", mProviceCompany);
+                intent.putExtra("type", 1);
+                startActivity(intent);
+                break;
+            case R.id.btn_location:
+                if (mLocationLatLng == null) {
+                    if (!mLocationClient.isStarted()) {
+                        mLocationClient.start();
+                    }
+                } else {
+                    addLocationMark();
+                }
+                break;
+        }
+    }
+
+    /**
+     * 添加全国marker标记
+     *
+     * @param businessCompany
+     */
+    private void addCountryMark(BusinessCompany businessCompany) {
+        if (businessCompany == null) {
+            return;
+        }
+        dialog = DialogUtils.loadingDialog(this);
+        mType = 1;
+        mMarkerIsAdd = false;
+        mBaiduMap.clear();
+        View view = LayoutInflater.from(this).inflate(R.layout.mark_business, null);
+        TextView tv_province_nums = (TextView) view.findViewById(R.id.tv_province_nums);
+        TextView tv_plan = (TextView) view.findViewById(R.id.tv_plan);
+        tv_province_nums.setText(businessCompany.quantity + "省");
+        tv_plan.setText(businessCompany.factNum + "/" + businessCompany.planNum);
+        //定义Maker坐标点
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromView(view);
+        LatLng latLng = new LatLng(Double.parseDouble(businessCompany.latitude), Double.parseDouble(businessCompany.longitude));
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(latLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+        Bundle bundle = new Bundle();
+        bundle.putInt("mType", 1);
+        marker.setExtraInfo(bundle);
+        setMapCenter(latLng);
+        setZoom(zoom_country);
+
+        DialogUtils.loadingDialogDismiss(dialog);
+    }
+
+
+    private void addAllProvinceMark(List<BusinessCompany> companys, int type) {
+        dialog = DialogUtils.loadingDialog(this);
+        if (companys == null && companys.size() == 0) {
+            Toast.makeText(BusinessCompanyActivity.this, "无数据", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (mLocationLatLng != null && type == 2) {
+            setMapCenter(mLocationLatLng);
+        } else {
+            BusinessCompany businessCompany = companys.get(0);
+            setMapCenter(new LatLng(Double.parseDouble(businessCompany.latitude), Double.parseDouble(businessCompany.longitude)));
+        }
+        setZoom(zoom_provices);
+        mMarkerIsAdd = false;
+        mBaiduMap.clear();
+        for (int i = 0; i < companys.size(); i++) {
+            View view = LayoutInflater.from(this).inflate(R.layout.mark_business_city, null);
+            TextView tv_province = (TextView) view.findViewById(R.id.tv_province);
+            TextView tv_real_plan = (TextView) view.findViewById(R.id.tv_real_plan);
+            BusinessCompany businessCompany = companys.get(i);
+            if (type != 4) {
+                tv_province.setText(businessCompany.provinceName);
+            } else {
+                tv_province.setText(businessCompany.cityName);
+            }
+
+            tv_real_plan.setText(businessCompany.factNum + "/" + businessCompany.planNum);
+            //定义Maker坐标点
+            //构建Marker图标
+            BitmapDescriptor bitmap = BitmapDescriptorFactory
+                    .fromView(view);
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(new LatLng(Double.parseDouble(businessCompany.latitude), Double.parseDouble(businessCompany.longitude)))
+                    .icon(bitmap);
+            //在地图上添加Marker，并显示
+            Marker marker = (Marker) mBaiduMap.addOverlay(option);
+            Bundle bundle = new Bundle();
+            mType = type;
+            bundle.putInt("mType", type);
+            bundle.putSerializable("businessCompany", businessCompany);
+            marker.setExtraInfo(bundle);
+            DialogUtils.loadingDialogDismiss(dialog);
+
+        }
+
+    }
+
+
+    private void addLocationMark() {
+        if (mMarkerIsAdd) {
+            setMapCenter(mLocationLatLng);
+            return;
+        }
+        mMarkerIsAdd = true;
+        //定义Maker坐标点
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.mipmap.icon_geo);
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(mLocationLatLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+        //初次进入页面定位不设置mLocationLatLng为中心点
+        if (!isFirstLocation) {
+            setMapCenter(mLocationLatLng);
+        }
+        isFirstLocation = false;
+    }
+
+
+    private class MyLocationListener implements BDLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            mLocationClient.stop();
+            if (bdLocation == null) {
+                isFirstLocation = false;
+                Toast.makeText(BusinessCompanyActivity.this, "定位失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(BusinessCompanyActivity.this, bdLocation.getAddrStr(), Toast.LENGTH_SHORT).show();
+            mLocationLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
+            addLocationMark();
+
+        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        btnBack.performClick();
+    }
+
+
+    /**
+     * 获取共多少家烟草专卖局
+     */
+    private void getTotalProvince() {
+        dialog = DialogUtils.loadingDialog(BusinessCompanyActivity.this);
+        dialog.setCancelable(true);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<BusinessCompany> companies  = Data.getResBusinessCompany(BusinessCompanyActivity.this, Constants.Area.COUNTRY, null);
+                if (companies != null && companies.size() != 0) {
+                    mCountryCompany = companies.get(0);
+                }
+                mHandler.sendEmptyMessage(1);
+            }
+        }).start();
+
+
+    }
+
+    /**
+     * 获取所有省份
+     */
+    private void getAllProvince() {
+        dialog = DialogUtils.loadingDialog(this);
+        dialog.setCancelable(true);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mAllProvince = Data.getResBusinessCompany(BusinessCompanyActivity.this, Constants.Area.PROVINCE, null);
+                if (mAllProvince != null) {
+                    mHandler.sendEmptyMessage(2);
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 获取省份下级公司
+     */
+    private void getLowerCompanys(String province) {
+        final String provinceStr;
+        if (!province.equals(province_guangdong) && !province.equals(province_hunan)) {
+            provinceStr = province_guangdong;
+        } else {
+            provinceStr = province;
+        }
+        dialog = DialogUtils.loadingDialog(this);
+        dialog.setCancelable(true);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mLowerCompanys = Data.getResBusinessCompany(BusinessCompanyActivity.this, Constants.Area.CITY, provinceStr);
+                if (mLowerCompanys != null) {
+                    mHandler.sendEmptyMessage(3);
+                }
+            }
+        }).start();
+    }
+
+
+    private void setBottomViewVisible(boolean isVisible) {
+        if (!isVisible) {
+            mParams.height = 0;
+        } else {
+
+            mParams.height = UnitUtils.dip2px(this, 140);
+        }
+
+        container_province_buy.setLayoutParams(mParams);
+    }
+
+
+}

@@ -1,0 +1,13 @@
+package com.ghg.tobacco;
+
+/**
+ * Created by yicen.wang on 2016/5/13.
+ */
+public class Constants {
+
+    public class SmokeType{
+        public static final int fake=1;//假
+
+        public static final int mix=2;//串
+    }
+}

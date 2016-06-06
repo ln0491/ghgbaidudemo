@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container_chart"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@mipmap/chart_bg_n"
+    android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:id="@+id/container_tab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_chart_describe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/margin_31"
+            android:paddingBottom="@dimen/margin_24"
+            android:gravity="center"
+            android:text="@string/inspection_result_statistic"
+            android:textColor="@color/color_323232"
+            android:textSize="@dimen/size_16" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/height_radio_button"
+            android:layout_marginLeft="@dimen/margin_30"
+            android:layout_marginRight="@dimen/margin_30"
+            android:layout_marginBottom="@dimen/margin_24"
+            android:visibility="gone"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_season"
+                style="@style/RaduioButonStyle"
+                android:text="@string/season" />
+
+            <RadioButton
+                android:id="@+id/rb_month"
+                style="@style/RaduioButonStyle"
+                android:layout_marginLeft="-1dp"
+                android:checked="false"
+                android:text="@string/month" />
+
+            <RadioButton
+                android:id="@+id/rb_day"
+                style="@style/RaduioButonStyle"
+                android:layout_marginLeft="-1dp"
+                android:checked="false"
+                android:text="@string/day" />
+
+        </RadioGroup>
+
+
+    </LinearLayout>
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/lineChart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/margin_20"
+        android:layout_marginRight="@dimen/margin_20"
+        android:layout_marginBottom="@dimen/margin_31"/>
+
+
+</LinearLayout>
+

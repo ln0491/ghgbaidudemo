@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@color/white"
+              android:orientation="vertical"
+    >
+
+    <TextView
+        android:id="@+id/tv_cigarette_brand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/margin_25"
+        android:paddingRight="@dimen/margin_10"
+        android:paddingTop="@dimen/margin_13"
+        android:paddingBottom="@dimen/margin_12"
+        android:orientation="vertical"
+        android:text="343"
+        android:textColor="@drawable/selector_text_cigarette_brand"
+        android:textSize="@dimen/size_16">
+
+    </TextView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_marginLeft="@dimen/margin_15"
+        android:layout_marginRight="@dimen/margin_15"
+        android:background="@mipmap/list_line_gray"/>
+
+</LinearLayout>

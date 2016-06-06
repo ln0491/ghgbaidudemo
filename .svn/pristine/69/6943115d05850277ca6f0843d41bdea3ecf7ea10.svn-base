@@ -1,0 +1,341 @@
+package com.ghg.tobacco.fragment;
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.GetStaticData;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.bean.FormData;
+import com.ghg.tobacco.bean.response.ResponseCheck;
+import com.ghg.tobacco.utils.UnitUtils;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.renderer.LineChartRenderer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+
+public class BigDataInspectionFragment extends Fragment {
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    private String mParam1;
+    private String mParam2;
+    private View mView;
+    private RadioButton rb_day, rb_month, rb_year;
+    private LineChart mChartInspection, mChartReport;
+    private RadioGroup mRadioGroup;
+    private int[] mColors;
+    private ArrayList<ILineDataSet> dataSets;
+    private LinearLayout container_inspection_tab;
+    private LinearLayout container_inspection;
+    private TextView tv_report;
+    private LinearLayout container_report;
+
+
+    public BigDataInspectionFragment() {
+        // Required empty public constructor
+    }
+
+    public static BigDataInspectionFragment newInstance(String param1, String param2) {
+        BigDataInspectionFragment fragment = new BigDataInspectionFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        mView = inflater.inflate(R.layout.fragment_big_data_inspection, container, false);
+
+        initView();
+        initialChart(mChartInspection);
+        initialChart(mChartReport);
+        initListener();
+        setLineData(mChartReport, Data.getResReport(GetStaticData.TYPE_MONTH).formData);
+        rb_day.setChecked(true);
+
+        return mView;
+    }
+
+
+    private void initView() {
+        mRadioGroup = (RadioGroup) mView.findViewById(R.id.radioGroup);
+        mChartInspection = (LineChart) mView.findViewById(R.id.lineChart_inspection);
+        mChartReport = (LineChart) mView.findViewById(R.id.lineChart_report);
+        rb_day = (RadioButton) mView.findViewById(R.id.rb_day);
+        rb_month = (RadioButton) mView.findViewById(R.id.rb_month);
+        rb_year = (RadioButton) mView.findViewById(R.id.rb_year);
+
+
+        container_inspection_tab = (LinearLayout) mView.findViewById(R.id.container_inspection_tab);
+        container_inspection = (LinearLayout) mView.findViewById(R.id.container_inspection);
+        tv_report = (TextView) mView.findViewById(R.id.tv_report);
+        container_report = (LinearLayout) mView.findViewById(R.id.container_report);
+
+    }
+    boolean isFristInspection = true;
+    int spaceInspection = 0;
+    boolean isFristReport = true;
+    int spaceReport = 0;
+
+    private void initListener() {
+
+        container_inspection_tab.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                if (isFristInspection) {
+                    if (spaceInspection != 0) {
+                        setChartHeight(container_inspection,container_inspection_tab.getHeight(),spaceInspection);
+                    }
+                    isFristInspection = false;
+                }
+            }
+        });
+
+        tv_report.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                if (isFristReport) {
+                    if (spaceReport != 0) {
+                        setChartHeight(container_report,tv_report.getHeight(),spaceReport);
+                    }
+                    isFristReport = false;
+                }
+            }
+        });
+
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                ResponseCheck checkData = null;
+                switch (checkedId) {
+                    case R.id.rb_day:
+                        checkData = Data.getResCheck(GetStaticData.TYPE_DAY);
+                        setLineData(mChartInspection, checkData.formData);
+                        break;
+                    case R.id.rb_month:
+                        checkData = Data.getResCheck(GetStaticData.TYPE_MONTH);
+                        setLineData(mChartInspection, checkData.formData);
+                        break;
+                    case R.id.rb_year:
+                        checkData = Data.getResCheck(GetStaticData.TYPE_YEAR);
+                        setLineData(mChartInspection, checkData.formData);
+                        break;
+                }
+
+            }
+        });
+    }
+
+
+    // 初始化图表
+    private void initialChart(LineChart mChart) {
+        mColors = new int[]{
+                getResources().getColor(R.color.color_blue),
+                getResources().getColor(R.color.color_f9435c),
+                getResources().getColor(R.color.color_fdbc3b),
+        };
+
+        //描述
+        mChart.setDescription("");
+        mChart.setNoDataTextDescription("暂无数据");
+        mChart.setTouchEnabled(true);
+        // 不可拖曳
+        mChart.setDragEnabled(false);
+        // 不可缩放
+        mChart.setScaleEnabled(false);
+        mChart.setDrawGridBackground(false);
+        mChart.setPinchZoom(false);
+
+        // 设置图表的背景颜色
+        mChart.setBackgroundColor(getResources().getColor(R.color.color_transparent));
+
+        // 图表的注解(只有当数据集存在时候才生效)
+        Legend l = mChart.getLegend();
+        // 线性，也可是圆
+        l.setForm(Legend.LegendForm.CIRCLE);
+        // 可以修改图表注解部分的位置
+        l.setPosition(Legend.LegendPosition.ABOVE_CHART_RIGHT);
+        // 图表的注解的字体颜色
+        l.setTextColor(getResources().getColor(R.color.color_969696));
+        // x坐标轴
+        XAxis xl = mChart.getXAxis();
+        xl.setTextColor(getResources().getColor(R.color.color_969696));
+        xl.setAvoidFirstLastClipping(true);
+        xl.setSelectedIndex(0);
+        // 几个x坐标轴之间才绘制？
+        xl.setSpaceBetweenLabels(1);
+        xl.setDrawAxisLine(true);
+        xl.setAxisLineColor(getResources().getColor(R.color.color_3f969696));
+        xl.setTextColor(getResources().getColor(R.color.color_969696));
+        // 如果false，那么x坐标轴将不可见
+        xl.setEnabled(true);
+        // 将X坐标轴放置在底部，默认是在底部。
+        xl.setPosition(XAxis.XAxisPosition.BOTTOM);
+        LineChartRenderer chartRenderer = mChart.getDataRenderer();
+        chartRenderer.setXAxis(xl);
+
+//        xl.setXOffset(30);
+//        xl.setYOffset(30);
+        xl.setSelectedIndex(0);
+        xl.setFirstOffest(true);
+        chartRenderer.setSelectedIndex(0);
+//        xl.setGridColor(
+//                getResources().getColor(R.color.color_transparent));
+        // 图表左边的y坐标轴线
+        YAxis leftAxis = mChart.getAxisLeft();
+//        leftAxis.setDrawZeroLine(true);
+        leftAxis.setTextColor(getResources().getColor(R.color.color_969696));
+//        leftAxis.setGridColor(
+//                getResources().getColor(R.color.color_transparent));
+        chartRenderer.setYAxis(leftAxis);
+//        隐藏左边坐标轴横网格线
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setGridColor(getResources().getColor(R.color.color_3f969696));
+        //隐藏右边坐标轴横网格线
+        mChart.getAxisRight().setDrawGridLines(false);
+        //隐藏X轴竖网格线
+        xl.setDrawGridLines(false);
+        //隐藏左边Y轴
+        leftAxis.setDrawAxisLine(false);
+        leftAxis.setEnabled(true);
+        leftAxis.setYOffset(-10);
+//        leftAxis.setXOffset(5);
+//        // 最大值
+//        leftAxis.setAxisMaxValue(Integer.MAX_VALUE);
+//        // 最小值
+//        leftAxis.setAxisMinValue(0f);
+        // 不一定要从0开始
+//        leftAxis.setStartAtZero(false);
+//        leftAxis.setDrawGridLines(true);
+
+        YAxis rightAxis = mChart.getAxisRight();
+        // 不显示图表的右边y坐标轴线
+        rightAxis.setEnabled(false);
+
+
+    }
+
+
+    private void setLineData(final LineChart mChart, FormData formData) {
+        ArrayList<String> xVals = new ArrayList<>();
+        List<String> xLabel = formData.label;
+        String[] dataKey = formData.dataKey;
+        Map<String, List<Double>> datas = formData.data;//Y轴数据
+        mChart.getAxisLeft().setLabelCount(formData.space+1, true);
+
+        if (mChart == mChartInspection) {
+            spaceInspection = formData.space;
+            int height = container_inspection_tab.getHeight();
+            if (height != 0) {
+                setChartHeight(container_inspection,height,spaceInspection);
+//                setSaleChartHeight(height);
+            }
+        }else{
+            if (mChart == mChartReport) {
+                spaceReport = formData.space;
+                int height = tv_report.getHeight();
+                if (height != 0) {
+                    setChartHeight(container_report,height,spaceReport);
+//                setSaleChartHeight(height);
+                }
+            }
+        }
+
+        for (int i = 0; i < xLabel.size(); i++) {
+            xVals.add((xLabel.get(i)));
+        }
+
+        dataSets = new ArrayList<>();
+
+
+        for (int i = 0; i < dataKey.length; i++) {
+            ArrayList<Entry> values = new ArrayList<>();
+            List<Double> yValues = datas.get(dataKey[i]);
+
+            for (int j = 0; j < xLabel.size(); j++) {
+                double value = yValues.get(j);
+                Entry entry = new Entry((float) value, j);
+                values.add(entry);
+            }
+            LineDataSet d = new LineDataSet(values, dataKey[i]);
+            d.setLineWidth(1f);
+            d.setCircleRadius(4f);
+            int color = mColors[i % mColors.length];
+            d.setColor(color);
+            d.setCircleColor(color);
+            d.setValueTextColor(color);
+            d.setValueTextSize(10);
+            //是否显示点上的值
+            d.setDrawValues(true);
+            dataSets.add(d);
+
+        }
+
+
+        LineData data = new LineData(xVals, dataSets);
+        mChart.setData(data);
+        mChart.animateX(500);
+        mChart.invalidate();
+        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+
+                XAxis mXAxis = mChart.getXAxis();
+                if (mXAxis.getSelectedIndex() != e.getXIndex()) {
+                    mXAxis.setSelectedIndex(e.getXIndex());
+                    LineChartRenderer mRenderer = mChart.getDataRenderer();
+                    mRenderer.setSelectedIndex(mXAxis.getSelectedIndex());
+                    mChart.invalidate();
+                }
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
+    }
+    private void setChartHeight(LinearLayout layout,int height,int space) {
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) layout.getLayoutParams();
+        height = UnitUtils.dip2px(getActivity(), space * 50 + 40 + 31) + height;
+        layoutParams.height = height;
+        layout.setLayoutParams(layoutParams);
+    }
+}

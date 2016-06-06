@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:background="@drawable/shape_blue_oval"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/tv_province"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingLeft="@dimen/margin_5"
+            android:paddingRight="@dimen/margin_11"
+            android:text="广东"
+            android:textColor="@color/white"
+            android:textSize="@dimen/size_14"/>
+
+        <TextView
+            android:id="@+id/tv_province_account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1家烟厂"
+            android:textColor="@color/white"
+            android:textSize="@dimen/size_14"/>
+
+        <TextView
+            android:id="@+id/tv_plan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_5"
+            android:text="500万箱"
+            android:textColor="#164281"
+            android:textSize="@dimen/size_14"/>
+    </LinearLayout>
+</LinearLayout>

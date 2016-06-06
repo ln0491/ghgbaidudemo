@@ -1,0 +1,101 @@
+package com.ghg.tobacco.ui;
+
+import android.content.Intent;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.BusinessCompany;
+import com.ghg.tobacco.utils.ResUtils;
+import com.ghg.tobacco.utils.UnitUtils;
+
+/**
+ * @author $Author
+ * @version $Rev$
+ * @time 2016/5/18 17:36
+ * @des ${TODO}
+ * @updateAuthor $Author$
+ * @updateDate $Date$
+ * @updateDes ${TODO}
+ */
+public class ProvinceCompanyDetailActivity extends BaseActivity {
+    private TextView tv_company_name,tv_stock_nums,tv_purchase_nums,tv_sales_nums;
+    private ImageView btn_back;
+    private ImageView companyImageView;
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_provice_company;
+    }
+
+    @Override
+    public void initView() {
+        tv_company_name = findViewId(R.id.tv_company_name);
+        tv_stock_nums = findViewId(R.id.tv_stock_nums);
+        tv_purchase_nums = findViewId(R.id.tv_purchase_nums);
+        tv_sales_nums = findViewId(R.id.tv_sales_nums);
+        btn_back = findViewId(R.id.btn_back);
+        companyImageView=findViewId(R.id.image_company);
+        RelativeLayout.LayoutParams params= (RelativeLayout.LayoutParams) companyImageView.getLayoutParams();
+        int screenWidth=UnitUtils.getScreenWidth(this);
+        params.width=screenWidth;
+        params.height=screenWidth;
+        companyImageView.setLayoutParams(params);
+    }
+
+    @Override
+    public void initListener() {
+        btn_back.setOnClickListener(this);
+    }
+
+    @Override
+    public void initData() {
+
+        Intent intent = getIntent();
+        BusinessCompany businessCompany = (BusinessCompany) intent.getSerializableExtra("company");
+        String million_boxes=ResUtils.getString(this,R.string.million_boxes);
+        if (businessCompany != null) {
+            tv_company_name.setText(businessCompany.name);
+            tv_sales_nums.setText(String.format(million_boxes, businessCompany.sale));
+            tv_stock_nums.setText(String.format(million_boxes,businessCompany.inventory));
+            tv_purchase_nums.setText(String.format(million_boxes,businessCompany.purchase));
+        }
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.btn_back:
+
+                finish();
+                break;
+
+            default:
+                break;
+        }
+    }
+}

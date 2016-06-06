@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/selector_f5_bg"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_company_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/margin_25"
+        android:paddingBottom="@dimen/margin_14"
+        android:paddingTop="@dimen/margin_14"
+        android:text="2"
+        android:textColor="@color/color_686868"
+        android:textSize="@dimen/size_16"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/margin_15"
+        android:layout_marginRight="@dimen/margin_15"
+        android:background="@mipmap/list_line_gray"/>
+</LinearLayout>

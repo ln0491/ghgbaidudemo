@@ -1,0 +1,13 @@
+package com.ghg.tobacco.bean;
+
+import java.util.List;
+/**
+ * Created by yicen.wang on 2016/5/12.
+ */
+public class PlanCompleteAmount {
+	
+	public List<String> label;//X轴数据
+	public List<Integer> plan;//计划量
+	public List<Integer> complete;//完成量
+
+}

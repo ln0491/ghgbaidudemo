@@ -1,0 +1,28 @@
+package com.ghg.tobacco;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by yicen.wang on 2016/5/13.
+ */
+public class Constants {
+
+    public class SmokeType{
+        public static final int fake=1;//假
+
+        public static final int mix=2;//串
+    }
+
+    public static class Area{
+        public static final int COUNTRY = 0;
+        public static final int PROVINCE= 1;
+        public static final int CITY = 2;
+        public static final int AREA = 3;
+        public static  List<String> provinceList;
+        public static  Map<String,List<String>> cityMap;
+        public static  Map<String,List<String>> areaMap;
+    }
+}

@@ -1,0 +1,302 @@
+package com.ghg.tobacco.ui;
+
+import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.adapter.CigaretterBrandAdapter;
+import com.ghg.tobacco.adapter.CigaretterContentAdapter;
+import com.ghg.tobacco.adapter.InventoryAdapter;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.base.BaseRecyclerAdapter;
+import com.ghg.tobacco.bean.Cigarette;
+import com.ghg.tobacco.bean.Invoicing;
+import com.ghg.tobacco.bean.response.ResponseCigarette;
+import com.ghg.tobacco.bean.response.ResponseCompanyInventory;
+import com.ghg.tobacco.utils.ResUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 省商业公司省级和市级公司库存、工业公司库存
+ */
+public class InventoryActivity extends BaseActivity {
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView mRecyclerViewBrand;
+    private RecyclerView mRecyclerViewContent;
+    private PopupWindow mPopupWindow;
+    private TextView tv_drop_down;
+    private List<Cigarette> cigarettes;
+    private ResponseCigarette cigaretteBrand;
+    private ResponseCigarette responseCigaretteContent;
+    private List<Cigarette> cigaretteContent;//所有烟
+    private List<Cigarette> brandCigaretteContent;//品牌对应的烟
+    private CigaretterBrandAdapter brandAdapter;
+    private CigaretterContentAdapter contentAdapter;
+    private int tag;
+    private int selectedCigaretteId;
+    private int selectedCigaretteContentId = -1;
+    private int preCigaretteId;
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    showPopupWindow();
+                    cigarettes = cigaretteBrand.lists;
+
+                    getResCigaretteName();
+                    break;
+                case 2:
+                    setBrandAdapter();
+                    cigaretteContent = responseCigaretteContent.lists;
+                    brandCigaretteContent=getBrandCigarette(preCigaretteId);
+                    setCigaretteContentAdapter(brandCigaretteContent);
+                    break;
+            }
+        }
+    };
+
+    private void setCigaretteContentAdapter(List<Cigarette>cigaretteContent) {
+        contentAdapter = new CigaretterContentAdapter(InventoryActivity.this, cigaretteContent, selectedCigaretteContentId);
+        mRecyclerViewContent.setAdapter(contentAdapter);
+        contentAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, Object model) {
+                popDimiss();
+                Cigarette cigarette = (Cigarette) model;
+                selectedCigaretteId = preCigaretteId;
+                selectedCigaretteContentId = cigarette.id;
+                tv_drop_down.setText(cigarette.name);
+                setInventory();
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position, Object model) {
+
+            }
+        });
+    }
+
+    private void setBrandAdapter() {
+        brandAdapter = new CigaretterBrandAdapter(InventoryActivity.this, cigarettes, selectedCigaretteId);
+        mRecyclerViewBrand.setAdapter(brandAdapter);
+        brandAdapter.setOnItemClickListener(new BaseRecyclerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, Object model) {
+                //                Toast.makeText(InventoryActivity.this, "onItemClick", Toast.LENGTH_SHORT).show();
+                Cigarette cigarette = (Cigarette) model;
+                int selecteId = brandAdapter.getSelecteId();
+                preCigaretteId = cigarette.id;
+                if (preCigaretteId != 0) {
+                    brandAdapter.setSelecteId(cigarette.id);
+                    brandAdapter.notifyDataSetChanged();
+                    if (cigaretteContent == null) {
+                        getResCigaretteName();
+                    } else {
+                        brandCigaretteContent = getBrandCigarette(preCigaretteId);
+                        if (brandCigaretteContent != null && brandCigaretteContent.size() != 0) {
+                            setCigaretteContentAdapter(brandCigaretteContent);
+                        } else {
+                            if (contentAdapter != null) {
+                                contentAdapter.clear();
+                                contentAdapter.notifyDataSetChanged();
+                            }
+                            Toast.makeText(InventoryActivity.this, ResUtils.getString(InventoryActivity.this, R.string.data_empty), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                } else {//看全部
+                    selectedCigaretteId = preCigaretteId;
+                    selectedCigaretteContentId=-1;
+                    popDimiss();
+                    tv_drop_down.setText("全部品牌和规格");
+                    setInventory();
+                }
+
+
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position, Object model) {
+
+            }
+        });
+    }
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_province_company_inventory;
+    }
+
+    @Override
+    public void initView() {
+        setBtnBack();
+        mRecyclerView = findViewId(R.id.recyclerView);
+        tv_drop_down = findViewId(R.id.tv_drop_down);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+    }
+
+    @Override
+    public void initListener() {
+        tv_drop_down.setOnClickListener(this);
+    }
+
+    @Override
+    public void initData() {
+        Intent intent = getIntent();
+        int type = intent.getIntExtra("type", 1);//1.省级 2.市级 3.工业公司
+        tag = (type == 1 || type == 3) ? Constants.Area.PROVINCE : Constants.Area.CITY;
+        setInventory();
+    }
+
+    private void setInventory() {
+        ResponseCompanyInventory responseCompanyInventory = Data.getResBusinessCompanyInventory(tag, null);
+        List<Invoicing> invoicings = responseCompanyInventory.invoicing;
+        if (invoicings != null) {
+            InventoryAdapter inventoryAdapter = new InventoryAdapter(this, invoicings, responseCompanyInventory.inventory);
+            mRecyclerView.setAdapter(inventoryAdapter);
+        }
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.tv_drop_down:
+
+                if (cigarettes == null) {
+                    getCigaretteBrand();
+                } else {
+                    showPopupWindow();
+                    setBrandAdapter();
+//                    if (selectedCigaretteId != 0) {
+                        brandCigaretteContent = getBrandCigarette(selectedCigaretteId);
+                        if (brandCigaretteContent != null && brandCigaretteContent.size() != 0) {
+                            setCigaretteContentAdapter(brandCigaretteContent);
+                        } else {
+                            if (contentAdapter != null) {
+                                contentAdapter.clear();
+                                contentAdapter.notifyDataSetChanged();
+                            }
+                            Toast.makeText(InventoryActivity.this, ResUtils.getString(InventoryActivity.this, R.string.data_empty), Toast.LENGTH_SHORT).show();
+                        }
+//                    }
+                }
+
+                break;
+
+            default:
+                break;
+        }
+    }
+
+
+    private void getCigaretteBrand() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                cigaretteBrand = Data.getResCigaretteBrand(InventoryActivity.this);
+                mHandler.sendEmptyMessage(1);
+            }
+        }).start();
+    }
+
+    private void getResCigaretteName() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                responseCigaretteContent = Data.getResCigaretteName(InventoryActivity.this);
+                mHandler.sendEmptyMessage(2);
+            }
+        }).start();
+    }
+
+    private void showPopupWindow() {
+        View view = LayoutInflater.from(this).inflate(R.layout.pop_cigarette_category, null);
+        mRecyclerViewBrand = (RecyclerView) view.findViewById(R.id.recyclerViewCategory);
+        mRecyclerViewContent = (RecyclerView) view.findViewById(R.id.recyclerViewContent);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerViewBrand.setLayoutManager(linearLayoutManager);
+
+        LinearLayoutManager linearLayoutManager2 = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerViewContent.setLayoutManager(linearLayoutManager2);
+        mPopupWindow = new PopupWindow(this);
+        mPopupWindow.setWidth(WindowManager.LayoutParams.MATCH_PARENT);
+        mPopupWindow.setHeight(WindowManager.LayoutParams.MATCH_PARENT);
+        mPopupWindow.setBackgroundDrawable(new ColorDrawable(0x34b1988b));
+        mPopupWindow.setFocusable(true);
+        mPopupWindow.setTouchable(true);
+        mPopupWindow.setOutsideTouchable(true);
+        mPopupWindow.setContentView(view);
+        //      mPopupWindow.setAnimationStyle(R.style.popuStyle);
+        //        mPopupWindow.showAtLocation(rootView, Gravity.CENTER
+        //               , 0, 0);
+        mPopupWindow.showAsDropDown(tv_drop_down);
+        mPopupWindow.update();
+
+    }
+
+
+    private void popDimiss() {
+        if (mPopupWindow != null) {
+            mPopupWindow.dismiss();
+            mPopupWindow = null;
+        }
+    }
+
+
+    private List<Cigarette> getBrandCigarette(int cigaretteId) {
+        if (cigaretteId==0){
+            return cigaretteContent;
+        }
+        List<Cigarette> brandCigarette = new ArrayList<Cigarette>();
+        for (int i = 0; i < cigaretteContent.size(); i++) {
+            Cigarette cigarette = cigaretteContent.get(i);
+            if (cigarette.categoryId == cigaretteId) {
+                brandCigarette.add(cigarette);
+            }
+        }
+        return brandCigarette;
+    }
+
+}

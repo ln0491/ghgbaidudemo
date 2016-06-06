@@ -1,0 +1,11 @@
+package com.ghg.tobacco.bean;
+
+/**
+ * Created by yicen.wang on 2016/5/16.
+ */
+public class Invoicing {
+    public String batch;
+    public int purchase;//进货
+    public int sale;//销售
+    public int inventory;//存货
+}

@@ -1,0 +1,153 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f5f5f5"
+    tools:context=".fragment.InspectionFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:id="@+id/container_sale"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_26"
+            android:background="@mipmap/chart_bg_n"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/margin_10"
+            android:paddingRight="@dimen/margin_10">
+
+          <LinearLayout
+              android:id="@+id/container_sale_tab"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+              <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:paddingTop="@dimen/margin_31"
+                  android:gravity="center"
+                  android:orientation="horizontal"
+                  android:paddingLeft="@dimen/margin_24"
+                  android:paddingRight="@dimen/margin_24">
+
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1.0"
+                      android:text="@string/plan_complete_sale"
+                      android:textColor="@color/color_323232"
+                      android:textSize="@dimen/size_16" />
+
+                  <TextView
+                      android:id="@+id/tv_business_sale"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:drawableLeft="@mipmap/ic_form_green"
+                      android:gravity="center"
+                      android:text="商业销量"
+                      android:textColor="@color/color_38c4a9"
+                      android:textSize="@dimen/size_12" />
+
+              </LinearLayout>
+
+
+              <RadioGroup
+                  android:id="@+id/rg_sale"
+                  android:layout_width="match_parent"
+                  android:layout_height="@dimen/height_radio_button"
+                  android:layout_margin="@dimen/margin_24"
+                  android:orientation="horizontal">
+
+                  <RadioButton
+                      android:id="@+id/rb_sale_month"
+                      style="@style/RaduioButonStyle"
+                      android:text="@string/month" />
+
+                  <RadioButton
+                      android:id="@+id/rb_sale_season"
+                      style="@style/RaduioButonStyle"
+                      android:layout_marginLeft="-1dp"
+                      android:checked="false"
+                      android:text="@string/season" />
+
+                  <RadioButton
+                      android:id="@+id/rb_sale_year"
+                      style="@style/RaduioButonStyle"
+                      android:layout_marginLeft="-1dp"
+                      android:checked="false"
+                      android:text="@string/year" />
+
+              </RadioGroup>
+
+          </LinearLayout>
+
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/lineChart_sale"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/margin_40"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/container_inventory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@mipmap/chart_bg_n"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/margin_24"
+            android:paddingRight="@dimen/margin_24">
+
+            <LinearLayout
+                android:id="@+id/container_inventory_tab"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/margin_31"
+                android:paddingBottom="@dimen/margin_24"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/margin_24"
+                android:paddingRight="@dimen/margin_24">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:text="@string/country_inventory"
+                    android:textColor="@color/color_323232"
+                    android:textSize="@dimen/size_16" />
+
+                <TextView
+                    android:id="@+id/tv_business_inventory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@mipmap/ic_form_green"
+                    android:gravity="center"
+                    android:text="商业库存"
+                    android:textColor="@color/color_38c4a9"
+                    android:textSize="@dimen/size_12" />
+
+            </LinearLayout>
+
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/lineChart_inventory"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/margin_31" />
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</ScrollView>

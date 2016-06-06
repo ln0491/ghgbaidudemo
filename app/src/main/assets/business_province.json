@@ -1,0 +1,198 @@
+[
+  {
+    "id": 2,
+    "name": "北京",
+    "num": 13,
+    "longitude": "116.470834",
+    "latitude": "39.875466"
+  },
+  {
+    "id": 3,
+    "name": "天津",
+    "longitude": "117.210526",
+    "latitude": "39.136244",
+    "num": 14
+  },
+  {
+    "id": 4,
+    "name": "河北",
+    "longitude": "114.458788",
+    "latitude": "38.012465",
+    "num": 18
+  },
+  {
+    "id": 5,
+    "name": "山西",
+    "longitude": "112.591616",
+    "latitude": "37.823913",
+    "num": 19
+  },
+  {
+    "id": 6,
+    "name": "内蒙古",
+    "longitude": "111.695018",
+    "latitude": "40.83107",
+    "num": 15
+  },
+  {
+    "id": 7,
+    "name": "辽宁",
+    "longitude": "121.624875",
+    "latitude": "38.916613",
+    "num": 18
+  },
+  {
+    "id": 8,
+    "name": "吉林",
+    "longitude": "125.324263",
+    "latitude": "43.893632",
+    "num": 20
+  },
+  {
+    "id": 9,
+    "name": "黑龙江",
+    "longitude": "126.633091",
+    "latitude": "45.781018",
+    "num": 19
+  },
+  {
+    "id": 10,
+    "name": "上海",
+    "longitude": "121.523777",
+    "latitude": "31.267313",
+    "num": 23
+  },
+  {
+    "id": 11,
+    "name": "江苏",
+    "longitude": "118.795544",
+    "latitude": "32.051091",
+    "num": 26
+  },
+  {
+    "id": 12,
+    "name": "浙江",
+    "longitude": "120.171954",
+    "latitude": "30.254192",
+    "num": 21
+  },
+  {
+    "id": 13,
+    "name": "安徽",
+    "longitude": "117.287782",
+    "latitude": "31.842682",
+    "num": 23
+  },
+  {
+    "id": 14,
+    "name": "福建",
+    "longitude": "119.311366",
+    "latitude": "26.114441",
+    "num": 28
+  },
+  {
+    "id": 15,
+    "name": "江西",
+    "longitude": "115.900901",
+    "latitude": "28.660525",
+    "num": 20
+  },
+  {
+    "id": 16,
+    "name": "山东",
+    "longitude": "117.141026",
+    "latitude": "36.660645",
+    "num": 20
+  },
+  {
+    "id": 17,
+    "name": "河南",
+    "longitude": "113.728356",
+    "latitude": "34.784283",
+    "num": 23
+  },
+  {
+    "id": 18,
+    "name": "湖北",
+    "longitude": "114.267882",
+    "latitude": "30.583854",
+    "num": 35
+  },
+  {
+    "id": 19,
+    "name": "湖南",
+    "longitude": "112.993519",
+    "latitude": "28.135596",
+    "num": 30
+  },
+  {
+    "id": 20,
+    "name": "广东",
+    "longitude": "113.263499",
+    "latitude": "23.146469",
+    "num": 50
+  },
+  {
+    "id": 21,
+    "name": "广西",
+    "longitude": "108.369159",
+    "latitude": "22.830765",
+    "num": 20
+  },
+  {
+    "id": 22,
+    "name": "海南",
+    "longitude": "110.351211",
+    "latitude": "20.007741",
+    "num": 19
+  },
+  {
+    "id": 23,
+    "name": "重庆",
+    "longitude": "106.570246",
+    "latitude": "29.583624",
+    "num": 28
+  },
+  {
+    "id": 24,
+    "name": "四川",
+    "longitude": "104.080948",
+    "latitude": "30.560424",
+    "num": 31
+  },
+  {
+    "id": 25,
+    "name": "贵州",
+    "longitude": "106.710617",
+    "latitude": "26.595264",
+    "num": 32
+  },
+  {
+    "id": 26,
+    "name": "云南",
+    "longitude": "102.727473",
+    "latitude": "25.039671",
+    "num": 35
+  },
+  {
+    "id": 27,
+    "name": "西藏",
+    "longitude": "91.085217",
+    "latitude": "29.664878",
+    "num": 15
+  },
+  {
+    "id": 28,
+    "name": "陕西",
+    "longitude": "108.983152",
+    "latitude": "34.204129",
+    "num": 20
+  },
+  {
+    "id": 29,
+    "name": "甘肃",
+    "longitude": "108.983152",
+    "latitude": "34.204129",
+    "num": 22
+  }
+]

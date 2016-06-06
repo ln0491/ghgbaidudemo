@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+
+    >
+
+    <SurfaceView
+        android:id="@+id/preview_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        />
+
+    <mining.app.zxing.view.ViewfinderView
+        android:id="@+id/viewfinder_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:label_text="@string/scan_text"
+        app:corner_color="@color/colorPrimary"
+        app:frame_color="@color/viewfinder_frame"
+        app:label_text_color="@color/colorPrimary"
+        app:laser_color="@color/colorPrimary"
+        app:mask_color="@color/viewfinder_mask"
+        app:result_color="@color/result_view"
+        app:result_point_color="@color/result_point_color"
+        />
+
+
+    <include layout="@layout/base_title"></include>
+
+</FrameLayout>

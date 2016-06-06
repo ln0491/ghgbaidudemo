@@ -1,0 +1,125 @@
+package com.ghg.tobacco.ui;
+
+import android.content.Intent;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.FormData;
+import com.ghg.tobacco.bean.response.ResponseCompanyAmount;
+import com.ghg.tobacco.utils.MathUtils;
+import com.ghg.tobacco.utils.ResUtils;
+import com.github.mikephil.charting.charts.LineChart;
+
+/**
+ * 省商业公司省级和市级公司进货量
+ */
+public class BusinessCompanyPurchaseActivity extends BaseActivity {
+
+    private LineChart mLineChart;
+    private TextView tv_chart_describe;
+    private TextView tv_compelete_rate,tv_real_account,tv_plan_account,tv_real,tv_plan,tv_year_plan;
+    private LinearLayout container_chart;
+    private int[] mColors;
+    private int space;
+    private boolean isFrist=true;
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_province_business_company_purchase;
+    }
+
+    @Override
+    public void initView() {
+        setBtnBack();
+        mLineChart=findViewId(R.id.lineChart);
+        tv_chart_describe=findViewId(R.id.tv_chart_describe);
+        container_chart=findViewId(R.id.container_chart);
+        tv_compelete_rate=findViewId(R.id.tv_compelete_rate);
+        tv_real_account=findViewId(R.id.tv_real_account);
+        tv_plan_account=findViewId(R.id.tv_plan_account);
+        tv_year_plan=findViewId(R.id.tv_year_plan);
+        tv_real=findViewId(R.id.tv_real);
+        tv_plan=findViewId(R.id.tv_plan);
+        mColors= new int[]{
+                getResources().getColor(R.color.color_blue),
+                getResources().getColor(R.color.color_fdbc3b),
+        };
+        initLineChartChart(mLineChart,mColors);
+    }
+
+    @Override
+    public void initListener() {
+
+    }
+
+    @Override
+    public void initData() {
+        Intent intent=getIntent();
+        int flag=intent.getIntExtra("flag",1);//1.进货 2.销售
+        int type=intent.getIntExtra("type",1);//1.省级 2.市级
+        ResponseCompanyAmount companyAmount=null;
+        int tag=type==1?Constants.Area.PROVINCE:Constants.Area.CITY;
+        if (flag==1){//进货
+            companyAmount= Data.getResBusinessCompanyAmount(tag,0,"");
+            tv_chart_describe.setText(ResUtils.getString(this,R.string.province_company_plan_purchase_linechart_describe));
+        }else{//销售
+            companyAmount=Data.getResBusinessCompanyAmount(tag,1,"");
+            tv_real.setText(ResUtils.getString(this,R.string.actual_sale));
+            tv_plan.setText(ResUtils.getString(this,R.string.plan_sale));
+            tv_chart_describe.setText(ResUtils.getString(this,R.string.province_company_plan_sale_linechart_describe));
+            tv_year_plan.setText(ResUtils.getString(this,R.string.year_sale_plan));
+        }
+
+        FormData formData=companyAmount.formData;
+        setLineData(mLineChart,formData,mColors,0);
+        space=formData.space;
+        tv_real_account.setText(String.valueOf(companyAmount.fact));
+        tv_plan_account.setText(String.valueOf(companyAmount.plan));
+        tv_compelete_rate.setText(MathUtils.formatDouble(100*companyAmount.fact/companyAmount.plan)+"%");
+        tv_chart_describe.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                if (isFrist){
+                    if (space!=0){
+                        setChartHeight(container_chart,tv_chart_describe.getHeight(),space);
+                    }
+                    isFrist=false;
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+}

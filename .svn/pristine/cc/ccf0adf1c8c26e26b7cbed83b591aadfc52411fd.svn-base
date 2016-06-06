@@ -1,0 +1,325 @@
+package com.ghg.tobacco.ui;
+
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapStatus;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.GetStaticData;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.BusinessCompany;
+import com.ghg.tobacco.bean.response.ResponseBusinessCompany;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author $Author
+ * @version $Rev$
+ * @time 2016/5/16 11:09
+ * @des ${TODO}
+ * @updateAuthor $Author$
+ * @updateDate $Date$
+ * @updateDes ${TODO}
+ */
+public class BusinessCompanyActivity extends BaseActivity {
+    private MapView mMapView;
+    private BaiduMap mBaiduMap;
+    private LocationClient mLocationClient;
+    private ImageView btnBack;
+    private View container_province_buy;
+    private int mType =1;
+    private LatLng mLocationLatLng;
+    private int zoom_province=8;
+    private int zoom_city=10;
+    private int zoom_company=12;
+    List<BusinessCompany> companies;
+    private  BusinessCompany provinceCompany;
+    public BDLocationListener myListener = new MyLocationListener();
+    private Handler mHandler=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 1:
+                    if (companies!=null&&companies.size()!=0){
+                        provinceCompany= companies.get(0);
+                        addProvinceMark(provinceCompany);
+                    }
+                    break;
+            }
+
+        }
+    };
+
+    @Override
+    public int bindLayout() {
+        return R.layout
+                .activity_business_company;
+    }
+
+    @Override
+    public void initView() {
+        setTitle(getResources().getString(R.string.title_map_business));
+        setBtnMenu();
+        container_province_buy=findViewId(R.id.container_province_buy);
+        btnBack=findViewId(R.id.btn_back);
+        mMapView=findViewId(R.id.mapView);
+        initMap();
+
+    }
+
+    private void initMap() {
+        mBaiduMap = mMapView.getMap();
+        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Bundle bundle=marker.getExtraInfo();
+                int type=bundle.getInt("mType");
+                if (type==1){//省级
+                    addCityMark(null);
+                    mType=2;
+//                    setMapCenter(mLocationLatLng,zoom_city);
+
+                }else if (type==2){//市级
+                    BusinessCompany businessCompany= (BusinessCompany) bundle.getSerializable("businessCompany");
+                    List<BusinessCompany>businessCompanys=new ArrayList<BusinessCompany>();
+                    businessCompanys.add(businessCompany);
+                    addCityMark(businessCompanys);
+                    setMapCenter(new LatLng(Double.valueOf(businessCompany.latitude),Double.parseDouble(businessCompany.longitude)),zoom_company);
+                    BusinessCompanyActivity.this.mType =3;
+                    container_province_buy.setVisibility(View.VISIBLE);
+
+                }
+                return false;
+            }
+
+
+        });
+        initLocation();
+        mLocationClient.start();
+    }
+
+    @Override
+    public void initListener() {
+        btnBack.setOnClickListener(this);
+    }
+
+    @Override
+    public void initData() {
+       new  Thread(new Runnable() {
+           @Override
+           public void run() {
+               ResponseBusinessCompany responseBusinessCompany= Data.getResBusinessCompany(BusinessCompanyActivity.this, Constants.Area.COUNTRY,null);
+                companies=responseBusinessCompany.company;
+               mHandler.sendEmptyMessage(1);
+           }
+       }).start();
+
+    }
+
+    @Override
+    public void resume() {
+        mMapView.onResume();
+    }
+
+    @Override
+    public void pause() {
+        mMapView.onPause();
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+        mMapView.onDestroy();
+        if (GetStaticData.businessCompanyCityMap!=null){
+            GetStaticData.businessCompanyCityMap.clear();
+            GetStaticData.businessCompanyCityMap=null;
+        }
+
+        if (GetStaticData.businessCompanyProvinceList!=null) {
+            GetStaticData.businessCompanyProvinceList.clear();
+            GetStaticData.businessCompanyProvinceList = null;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()){
+            case  R.id.btn_back:
+                if (mType ==1){
+                    finish();
+                }else if (mType ==2){
+                    container_province_buy.setVisibility(View.GONE);
+                    addProvinceMark(provinceCompany);
+                    setMapCenter(mLocationLatLng,zoom_province);
+                }else if (mType ==3){
+                    container_province_buy.setVisibility(View.GONE);
+//                    addCityMark(getCitys();
+                    addCityMark(null);
+//                    setMapCenter(mLocationLatLng,zoom_city);
+                }
+                break;
+        }
+    }
+
+    private void addProvinceMark(BusinessCompany businessCompany){
+        mType =1;
+        mBaiduMap.clear();
+        View view= LayoutInflater.from(this).inflate(R.layout.mark_business,null);
+        TextView textView= (TextView) view.findViewById(R.id.tv_province_nums);
+        textView.setText(businessCompany.factNum+"/"+businessCompany.planNum);
+        //定义Maker坐标点
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromView(view);
+        LatLng latLng=new LatLng(Double.parseDouble(businessCompany.latitude),Double.parseDouble(businessCompany.longitude));
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(latLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+        Bundle bundle=new Bundle();
+        bundle.putInt("mType",1);
+        marker.setExtraInfo(bundle);
+        setMapCenter(latLng,8);
+
+    }
+
+
+    private void addCityMark( List<BusinessCompany> company){
+        if (company==null){
+            ResponseBusinessCompany responseBusinessCompany=  Data.getResBusinessCompany(this,Constants.Area.PROVINCE,null);
+            company= responseBusinessCompany.company;
+            setMapCenter(new LatLng(Double.parseDouble(company.get(0).latitude),Double.parseDouble(company.get(0).longitude)),zoom_company);
+        }else{
+            setMapCenter(new LatLng(Double.parseDouble(company.get(0).latitude),Double.parseDouble(company.get(0).longitude)),zoom_city);
+        }
+
+        mBaiduMap.clear();
+        for (int i = 0; i < company.size(); i++) {
+            View view= LayoutInflater.from(this).inflate(R.layout.mark_business_city,null);
+            TextView tv_city= (TextView) view.findViewById(R.id.tv_city);
+            TextView tv_real_plan= (TextView) view.findViewById(R.id.tv_real_plan);
+            BusinessCompany businessCompany=company.get(i);
+            tv_city.setText(businessCompany.cityName);
+            tv_real_plan.setText(businessCompany.factNum+"/"+businessCompany.planNum);
+            //定义Maker坐标点
+            //构建Marker图标
+            BitmapDescriptor bitmap = BitmapDescriptorFactory
+                    .fromView(view);
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(new LatLng(Double.parseDouble(businessCompany.latitude),Double.parseDouble(businessCompany.latitude)))
+                    .icon(bitmap);
+            //在地图上添加Marker，并显示
+            Marker marker = (Marker) mBaiduMap.addOverlay(option);
+            Bundle bundle=new Bundle();
+            bundle.putInt("mType",2);
+            bundle.putSerializable("businessCompany",businessCompany);
+            marker.setExtraInfo(bundle);
+
+        }
+
+    }
+
+    private void initLocation(){
+        mLocationClient = new LocationClient(getApplicationContext());     //声明LocationClient类
+        mLocationClient.registerLocationListener( myListener );    //注册监听函数
+        LocationClientOption option = new LocationClientOption();
+        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy
+        );//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
+        option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
+//        int span=1000;
+//        option.setScanSpan(span);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
+        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
+        option.setOpenGps(true);//可选，默认false,设置是否使用gps
+        option.setLocationNotify(true);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
+        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
+        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
+        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
+        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
+        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤gps仿真结果，默认需要
+        mLocationClient.setLocOption(option);
+    }
+
+
+    private void setMapCenter(LatLng latLng,int zoom){
+        mBaiduMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(new MapStatus.Builder().
+                target(latLng).zoom(zoom).build()));//设置缩放级别
+    }
+    private  class MyLocationListener implements BDLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            mLocationClient.stop();
+            if (bdLocation==null){
+                Toast.makeText(BusinessCompanyActivity.this, "定位失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(BusinessCompanyActivity.this, bdLocation.getAddrStr(), Toast.LENGTH_SHORT).show();
+            LatLng latLng=new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
+            mLocationLatLng=latLng;
+
+        }
+    }
+
+
+    class City implements Serializable{
+        public String cityName;
+        public double lat;
+        public double lon;
+
+        public City(String cityName, double lat, double lon) {
+            this.cityName = cityName;
+            this.lat = lat;
+            this.lon = lon;
+        }
+    }
+
+
+    private List<City> getCitys() {
+        City city=new City("广州",23.336412,113.185317);
+        City city2=new City("深圳",22.578419,114.047715);
+        City city3=new City("河源",23.786044,114.700819);
+        List<City>citys=new ArrayList<City>();
+        citys.add(city);
+        citys.add(city2);
+        citys.add(city3);
+        return citys;
+    }
+
+    @Override
+    public void onBackPressed() {
+        btnBack.performClick();
+    }
+}

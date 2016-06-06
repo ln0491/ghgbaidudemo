@@ -1,0 +1,16 @@
+package com.ghg.tobacco.bean.response;
+
+import com.ghg.tobacco.bean.FormData;
+
+
+/**
+ * Created by yicen.wang on 2016/5/16.
+ */
+public class ResponseCompanyAmount {
+
+
+    public Double plan;//计划
+    public Double fact;//实际
+    //进销
+    public FormData formData;
+}

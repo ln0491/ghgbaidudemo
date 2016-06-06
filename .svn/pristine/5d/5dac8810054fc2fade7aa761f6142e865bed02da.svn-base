@@ -1,0 +1,12 @@
+package com.ghg.tobacco.bean.response;
+
+import com.ghg.tobacco.bean.ReportStatistics;
+
+/**
+ * Created by yicen.wang on 2016/5/11.
+ */
+public class ResponseReportTop5 {
+    public ReportStatistics reportArea;//地区举报Top5
+    public ReportStatistics reportShop;//商店举报Top5
+
+}

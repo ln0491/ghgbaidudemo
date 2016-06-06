@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <include layout="@layout/base_title"
+        android:id="@+id/layout_tilte"/>
+    <com.baidu.mapapi.map.MapView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/mapView"
+        android:layout_below="@id/layout_tilte">
+
+    </com.baidu.mapapi.map.MapView>
+
+
+    <TextView
+        android:layout_width="230dp"
+        android:layout_height="45dp"
+        android:orientation="horizontal"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/layout_tilte"
+        android:background="@mipmap/map_float_bg"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:textSize="@dimen/size_15"
+        android:textColor="@color/color_686868"
+        android:layout_marginTop="10dp"
+        android:text="@string/map_tip"
+        >
+
+    </TextView>
+
+</RelativeLayout>

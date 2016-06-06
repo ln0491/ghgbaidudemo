@@ -1,0 +1,41 @@
+package com.ghg.tobacco.utils;
+
+import android.app.Dialog;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.xrecyclerview.ProgressStyle;
+import com.ghg.tobacco.xrecyclerview.SimpleViewSwithcer;
+import com.ghg.tobacco.xrecyclerview.progressindicator.indicator.AVLoadingIndicatorView;
+
+/**
+ * Created by weizhi.zhu on 2016/5/6.
+ */
+public class DialogUtils {
+
+
+    public static Dialog loadingDialog(Context mContext){
+        Dialog dialog=new Dialog(mContext, R.style.DialogLoading);
+        View view=LayoutInflater.from(mContext).inflate(R.layout.dialog_loading,null);
+
+        SimpleViewSwithcer progressBar= (SimpleViewSwithcer) view.findViewById(R.id.progressBar);
+        AVLoadingIndicatorView progressView = new  AVLoadingIndicatorView(mContext);
+        progressView.setIndicatorColor(0xffB5B5B5);
+        progressView.setIndicatorId(ProgressStyle.BallSpinFadeLoader);
+        progressBar.setView(progressView);
+        dialog.setContentView(view);
+//        progressBar.setVisibility(View.GONE);
+        dialog.show();
+        return  dialog;
+    }
+
+
+    public static void loadingDialogDismiss(Dialog dialog){
+        if (dialog!=null){
+            dialog.dismiss();
+        }
+        dialog=null;
+    }
+}

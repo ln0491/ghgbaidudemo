@@ -1,0 +1,429 @@
+package com.ghg.tobacco.ui;
+
+import android.animation.ValueAnimator;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseMapActivity;
+import com.ghg.tobacco.bean.Industry;
+import com.ghg.tobacco.bean.response.ResponseIndustry;
+import com.ghg.tobacco.custom_view.MapZoomImageView;
+import com.ghg.tobacco.utils.DialogUtils;
+import com.ghg.tobacco.utils.ResUtils;
+
+import java.util.List;
+
+/**
+ * 工业公司
+ */
+public class IndustryCompanyActivity extends BaseMapActivity {
+    private ImageView btnBack;
+    private LatLng mLocationLatLng;
+    private int zoom_country = 5;
+    private int zoom_provice = 8;
+    private int zoom_city = 10;
+    private Dialog dialog;
+    private boolean isFirstLocation = false;
+    private ImageView zoom_in, zoom_out, btn_location;
+    private MapZoomImageView zoom;
+    private View container_industry;
+    private ResponseIndustry responseIndustry;
+    private TextView tv_industry_name, tv_produce_plan;
+    private ImageView image_arrow_detail;
+    private View container_detail;
+    private Industry mIndustry_country;
+    private List<Industry> mIndustries_province;
+    private List<Industry> mIndustries_city;
+    private int currentType = Constants.Area.COUNTRY;
+    private RelativeLayout.LayoutParams mParams;
+    private Industry mIndustry;
+
+    public BDLocationListener myListener = new MyLocationListener();
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            DialogUtils.loadingDialogDismiss(dialog);
+            List<Industry> industries = responseIndustry.company;
+            if (industries == null || industries.size() == 0) {
+                return;
+            }
+            switch (msg.what) {
+                case Constants.Area.COUNTRY:
+                    mIndustry_country = industries.get(0);
+                    addCountryMark(mIndustry_country);
+                    break;
+                case Constants.Area.PROVINCE:
+                    mIndustries_province = industries;
+                    addProvinceMark(industries, Constants.Area.PROVINCE);
+                    break;
+                case Constants.Area.CITY:
+                    mIndustries_city = industries;
+                    addProvinceMark(industries, Constants.Area.CITY);
+                    break;
+
+            }
+
+        }
+    };
+
+
+
+    @Override
+    public int bindLayout() {
+        return R.layout
+                .activity_industry_company;
+    }
+
+    @Override
+    public void initView() {
+        setTitle(getResources().getString(R.string.industrial_company));
+        setBtnMenu();
+
+        btnBack = findViewId(R.id.btn_back);
+        mMapView = findViewId(R.id.mapView);
+        zoom_in = findViewId(R.id.zoom_in);
+        zoom_out = findViewId(R.id.zoom_out);
+        zoom = findViewId(R.id.zoom);
+        btn_location = findViewId(R.id.btn_location);
+        container_industry = findViewId(R.id.container_industry);
+        tv_produce_plan = findViewId(R.id.tv_produce_plan);
+        tv_industry_name = findViewId(R.id.tv_industry_name);
+        container_detail = findViewId(R.id.container_detail);
+        image_arrow_detail = findViewId(R.id.image_arrow_detail);
+        mParams = (RelativeLayout.LayoutParams) container_industry.getLayoutParams();
+        initMap();
+        zoom.setZoomInOut(zoom_in, zoom_out);
+
+    }
+
+    private void initMap() {
+        mBaiduMap = mMapView.getMap();
+        hideZoomControls();
+        hideLogo();
+        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Bundle bundle = marker.getExtraInfo();
+                if (bundle != null) {
+                    int type = bundle.getInt("mType");
+                    if (type == Constants.Area.COUNTRY) {
+                        getIndustry(Constants.Area.PROVINCE, null);
+                    } else if (type == Constants.Area.PROVINCE) {
+                        Industry industry = (Industry) bundle.getSerializable("industry");
+                        getIndustry(Constants.Area.CITY, industry.province);
+                    } else if (type == Constants.Area.CITY) {
+                        mIndustry = (Industry) bundle.getSerializable("industry");
+                        setBottomViewVisible(true, mIndustry);
+                    }
+                }
+                return true;
+            }
+
+
+        });
+        initLocation(myListener);
+        mLocationClient.start();
+        isFirstLocation = true;
+
+    }
+
+    @Override
+    public void initListener() {
+        btnBack.setOnClickListener(this);
+        btn_location.setOnClickListener(this);
+        image_arrow_detail.setOnClickListener(this);
+        container_detail.setOnClickListener(this);
+        zoom.setOnClickListener(new MapZoomImageView.OnClickListener() {
+            @Override
+            public void zoomInClick() {
+                zoomIn();
+            }
+
+            @Override
+            public void zoomOutClick() {
+                zoomOut();
+            }
+        });
+    }
+
+    @Override
+    public void initData() {
+        getIndustry(Constants.Area.COUNTRY, null);
+    }
+
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+        mHandler.removeMessages(Constants.Area.COUNTRY);
+        mHandler.removeMessages(Constants.Area.PROVINCE);
+        mHandler.removeMessages(Constants.Area.CITY);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+
+            case R.id.btn_back:
+                if (currentType == Constants.Area.COUNTRY) {
+                    finish();
+                } else if (currentType == Constants.Area.PROVINCE) {
+                    addCountryMark(mIndustry_country);
+
+                } else if (currentType == Constants.Area.CITY) {
+                    setBottomViewVisible(false, null);
+                    addProvinceMark(mIndustries_province, Constants.Area.PROVINCE);
+                }
+                break;
+
+            case R.id.btn_location:
+                if (mLocationLatLng == null) {
+                    if (!mLocationClient.isStarted()) {
+                        mLocationClient.start();
+                    }
+                } else {
+                    addLocationMark();
+                }
+                break;
+            case R.id.btn_menu:
+                startActivity(new Intent(IndustryCompanyActivity.this, IndustryListActivity.class));
+                break;
+            case R.id.image_arrow_detail:
+            case R.id.container_detail:
+                Intent intent=new Intent(IndustryCompanyActivity.this, IndustryCompanyDetailActivity.class);
+                intent.putExtra("industry",mIndustry);
+                startActivity(intent);
+                break;
+        }
+    }
+
+
+    private void addLocationMark() {
+        //定义Maker坐标点
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.mipmap.icon_geo);
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(mLocationLatLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+        //初次进入页面定位不设置mLocationLatLng为中心点
+        if (!isFirstLocation) {
+            setMapCenter(mLocationLatLng);
+        }
+        isFirstLocation = false;
+    }
+
+
+    private class MyLocationListener implements BDLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            mLocationClient.stop();
+            if (bdLocation == null) {
+                isFirstLocation = false;
+                Toast.makeText(IndustryCompanyActivity.this, "定位失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(IndustryCompanyActivity.this, bdLocation.getAddrStr(), Toast.LENGTH_SHORT).show();
+            mLocationLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
+            addLocationMark();
+
+        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        btnBack.performClick();
+        //super.onBackPressed();
+    }
+
+
+    private void getIndustry(final int type, final String value) {
+        dialog = DialogUtils.loadingDialog(this);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                responseIndustry = Data.getResIndustry(IndustryCompanyActivity.this, type, value);
+                mHandler.sendEmptyMessageDelayed(type, 0);
+            }
+        }).start();
+    }
+
+
+    /**
+     * 添加全国marker标记
+     *
+     * @param industry
+     */
+    private void addCountryMark(Industry industry) {
+        if (industry == null) {
+            return;
+        }
+        //        mType = 1;
+        //        mMarkerIsAdd = false;
+        currentType = Constants.Area.COUNTRY;
+        mBaiduMap.clear();
+        View view = LayoutInflater.from(this).inflate(R.layout.industry_country_mark, null);
+        TextView tv_industry_account = (TextView) view.findViewById(R.id.tv_industry_country_account);
+        TextView tv_plan = (TextView) view.findViewById(R.id.tv_plan);
+        tv_plan.setText(String.format(ResUtils.getString(this, R.string.million_boxes), industry.planNum));
+        tv_industry_account.setText(String.format(ResUtils.getString(this, R.string.industry_account), industry.quantity));
+
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromView(view);
+        //定义Maker坐标点
+        LatLng latLng = new LatLng(Double.parseDouble(industry.latitude), Double.parseDouble(industry.longitude));
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(latLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+        Bundle bundle = new Bundle();
+        bundle.putInt("mType", Constants.Area.COUNTRY);
+        marker.setExtraInfo(bundle);
+        setMapCenter(latLng);
+        setZoom(zoom_country);
+
+    }
+
+
+    /**
+     * 添加省份或省份的烟草marker标记
+     *
+     * @param industries
+     */
+    private void addProvinceMark(List<Industry> industries, int type) {
+        //        mType = 1;
+        //        mMarkerIsAdd = false;
+        currentType = type;
+        mBaiduMap.clear();
+        View view = LayoutInflater.from(this).inflate(R.layout.industry_province_mark, null);
+        TextView tv_province_account = (TextView) view.findViewById(R.id.tv_province_account);
+        TextView tv_plan = (TextView) view.findViewById(R.id.tv_plan);
+        TextView tv_province = (TextView) view.findViewById(R.id.tv_province);
+        LatLng latLngCenter = null;
+        for (int i = 0; i < industries.size(); i++) {
+            Industry industry = industries.get(i);
+            tv_plan.setText(String.format(ResUtils.getString(this, R.string.million_boxes), industry.planNum));
+            if (type == Constants.Area.PROVINCE) {
+                tv_province.setText(industry.provinceName);
+                tv_province_account.setText(String.format(ResUtils.getString(this, R.string.industry__province_account), industry.quantity));
+            } else {
+                tv_province_account.setVisibility(View.GONE);
+                tv_province.setText(industry.name);
+            }
+
+            //构建Marker图标
+            BitmapDescriptor bitmap = BitmapDescriptorFactory
+                    .fromView(view);
+            //定义Maker坐标点
+            LatLng latLng = new LatLng(Double.parseDouble(industry.latitude), Double.parseDouble(industry.longitude));
+            if (i == 0) {
+                latLngCenter = latLng;
+            }
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(latLng)
+                    .icon(bitmap);
+            //在地图上添加Marker，并显示
+            Marker marker = (Marker) mBaiduMap.addOverlay(option);
+            Bundle bundle = new Bundle();
+            bundle.putInt("mType", type);
+            bundle.putSerializable("industry", industry);
+            marker.setExtraInfo(bundle);
+        }
+        setMapCenter(latLngCenter);
+
+        if (type == Constants.Area.CITY) {
+            mIndustry = industries.get(0);
+            setBottomViewVisible(true, mIndustry);
+            setZoom(zoom_city);
+        } else {
+            setZoom(zoom_provice);
+            setBottomViewVisible(false, null);
+        }
+
+
+    }
+
+    /**
+     * 隐藏或显示详情
+     *
+     * @param isVisible
+     */
+    private void setBottomViewVisible(boolean isVisible, Industry industry) {
+
+        if (!isVisible) {
+            if (container_industry.getHeight() != 0) {
+                int start =container_industry.getHeight();
+                setBottomViewVisible(start, 0);
+            }
+        } else {
+            if (industry != null) {
+                tv_industry_name.setText(industry.name);
+                tv_produce_plan.setText(String.format(ResUtils.getString(this, R.string.industry_product_account), industry.produce)
+                        + "  " + String.format(ResUtils.getString(this, R.string.industry_plan_account), industry.planNum));
+            }
+            if (container_industry.getHeight() == 0) {
+                int end = (int) ResUtils.getDimension(this, R.dimen.height_industry_map_bottomView);
+                setBottomViewVisible(0, end);
+            }
+        }
+    }
+
+    private void setBottomViewVisible(int start, int end) {
+
+        ValueAnimator animator = ValueAnimator.ofInt(start, end);
+        animator.setDuration(500);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int value = (int) animation.getAnimatedValue();
+                mParams.height = value;
+                container_industry.setLayoutParams(mParams);
+            }
+        });
+        animator.start();
+    }
+}

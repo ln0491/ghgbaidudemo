@@ -1,0 +1,38 @@
+package com.ghg.tobacco.bean;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by yicen.wang on 2016/5/16.
+ */
+public class BusinessCompany {
+    public Integer id;//主键
+    public String name;//名称
+    public Integer type;//类型 0省局 1市局
+    public String province;//省
+    public String city;//市
+    public String longitude;//经度
+    public String latitude;//纬度
+    public String tell;//电话
+    public String fax;//传真
+    public String url;//网址
+    public String address;//地址
+    public String postcode;//邮政编码
+    public Integer provinceId;//省局ID
+    public Double planNum;//计划数量
+    public Double factNum;//实际数量
+
+    public Double purchase;//进货
+    public Double sale;//销售
+    public Double inventory;//存货
+    public Integer inTransitCar;//在途车辆数
+    public Integer inTransitNum;//在途数
+
+    public Integer quantity;//共多少家烟草专卖局
+
+    public String provinceName;//省
+    public String cityName;//市
+
+
+}

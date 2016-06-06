@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f5f5f5"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_bar_mian"
+        android:background="@color/colorPrimary">
+
+        <ImageView
+            android:id="@+id/btn_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_margin="@dimen/margin_10"
+            android:src="@drawable/selector_btn_scan"/>
+
+        <ImageView
+            android:id="@+id/btn_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="@dimen/margin_10"
+            android:src="@drawable/selector_btn_seting_main"/>
+
+    </RelativeLayout>
+
+    <com.ghg.tobacco.custom_view.CircleImageView
+        android:id="@+id/ibtn_user_header"
+        android:layout_width="@dimen/height_user_header"
+        android:layout_height="@dimen/height_user_header"
+        android:src="@mipmap/test"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_40">
+
+    </com.ghg.tobacco.custom_view.CircleImageView>
+
+    <TextView
+        android:id="@+id/tv_userName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/size_20"
+        android:textColor="@color/color_323232"
+        android:layout_below="@id/ibtn_user_header"
+        android:layout_marginTop="@dimen/margin_20"
+        android:text="@string/user_name"/>
+
+    <TextView
+        android:id="@+id/tv_role"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textSize="@dimen/size_12"
+        android:textColor="@color/color_323232"
+        android:layout_below="@id/tv_userName"
+        android:layout_marginTop="@dimen/margin_10"
+        android:text="@string/role"/>
+
+    <LinearLayout
+        android:id="@+id/container_login_infor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_role"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/size_12"
+            android:textColor="@color/color_969696"
+            android:layout_marginTop="@dimen/margin_10"
+            android:text="@string/time_last_login"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/size_12"
+            android:textColor="@color/color_969696"
+            android:layout_marginTop="@dimen/margin_10"
+            android:text="2016-05-09 11:30"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/margin_20"
+        android:layout_marginLeft="@dimen/margin_10"
+        android:layout_marginRight="@dimen/margin_10"
+        android:layout_marginBottom="@dimen/margin_10"
+        android:layout_below="@id/container_login_infor"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        >
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:background="@drawable/selector_btn_main_menu"
+                android:layout_weight="2"
+                android:gravity="center"
+                >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/btn_national_statistics"/>
+
+                <TextView
+                    style="@style/MainMenuText"
+                    android:text="@string/big_data_Kanban"/>
+
+                <TextView
+                    style="@style/mainMenuText_en"
+                    android:text="@string/big_data_Kanban_en"/>
+
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_marginLeft="@dimen/margin_10"
+                android:layout_marginRight="@dimen/margin_10"
+                android:background="@color/color_3f969696"/>
+            <LinearLayout
+                android:id="@+id/container_inspection"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:background="@drawable/selector_btn_main_menu"
+                android:layout_weight="1">
+
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/btn_inspection"/>
+
+                <TextView
+                    style="@style/MainMenuText"
+                    android:text="@string/inspection_counterfeit"/>
+
+                <TextView
+                    style="@style/mainMenuText_en"
+                    android:text="@string/inspection_counterfeit_en"/>
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/margin_10"
+            android:background="@color/color_3f969696"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:gravity="center"
+                android:layout_weight="2"
+                android:orientation="vertical"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:background="@drawable/selector_btn_main_menu"
+                    android:layout_weight="1">
+
+
+
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@mipmap/btn_business_company"/>
+
+                    <TextView
+                        style="@style/MainMenuText"
+                        android:text="@string/business_company"/>
+
+                    <TextView
+                        style="@style/mainMenuText_en"
+                        android:text="@string/business_company_en"/>
+
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:layout_marginLeft="@dimen/margin_10"
+                    android:layout_marginRight="@dimen/margin_10"
+                    android:background="@color/color_3f969696"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:background="@drawable/selector_btn_main_menu"
+                    android:gravity="center"
+                    android:layout_weight="1">
+
+
+
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@mipmap/btn_industrial_company"/>
+
+                    <TextView
+                        style="@style/MainMenuText"
+                        android:text="@string/industrial_company"/>
+
+                    <TextView
+                        style="@style/mainMenuText_en"
+                        android:text="@string/industrial_company_en"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1px"
+                android:layout_marginLeft="@dimen/margin_10"
+                android:layout_marginRight="@dimen/margin_10"
+                android:background="@color/color_3f969696"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:background="@drawable/selector_btn_main_menu"
+                android:layout_weight="1">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/btn_retail_store"/>
+
+                <TextView
+                    style="@style/MainMenuText"
+                    android:text="@string/retail_store"/>
+
+                <TextView
+                    style="@style/mainMenuText_en"
+                    android:text="@string/retail_store_en"/>
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </LinearLayout>
+</RelativeLayout>

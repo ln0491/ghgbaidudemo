@@ -1,0 +1,304 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f5f5f5"
+    tools:context=".fragment.InspectionFragment">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_title"
+                android:layout_marginTop="@dimen/margin_5"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+
+                <!--<TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+
+                    />
+
+                <TextView
+                    style="@style/AreaText"
+                    android:drawableRight="@mipmap/btn_arrow_down_nomal"
+                    android:text="广东省" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="@dimen/height_line"
+                    android:layout_height="@dimen/vertical_line"
+                    android:background="@drawable/vertical_line" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    style="@style/AreaText"
+                    android:drawableRight="@mipmap/btn_arrow_down_nomal"
+                    android:text="深圳市" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="@dimen/height_line"
+                    android:layout_height="@dimen/vertical_line"
+                    android:background="@drawable/vertical_line" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    style="@style/AreaText"
+                    android:drawableRight="@mipmap/btn_arrow_down_nomal"
+                    android:text="南山区" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />-->
+
+                <TextView
+                    android:id="@+id/tv_area_choose"
+                    style="@style/AreaText"
+                    android:drawableLeft="@mipmap/ic_map_little_blue"
+                    android:textColor="@color/color_38c4a9"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_area"
+                android:layout_marginTop="@dimen/margin_5"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_month"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="JAN"
+                        android:textSize="@dimen/size_12" />
+
+                    <TextView
+                        android:id="@+id/tv_day"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_month"
+                        android:text="24"
+                        android:layout_marginTop="@dimen/margin_2"
+                        android:textSize="@dimen/size_24" />
+
+
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="1px"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/vertical_line" />
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_inspection"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tab_inspection"
+                        android:textSize="@dimen/size_12" />
+
+                    <TextView
+                        android:id="@+id/tv_inspection_nums"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_inspection"
+                        android:text="24"
+                        android:layout_marginTop="@dimen/margin_2"
+                        android:textSize="@dimen/size_24" />
+
+                    <TextView
+                        android:id="@+id/tv_d"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/tv_inspection_nums"
+                        android:layout_toRightOf="@id/tv_inspection_nums"
+                        android:gravity="bottom"
+                        android:text="@string/tiao" />
+
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_false_smoke"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/false_smoke"
+                        android:textSize="@dimen/size_12" />
+
+                    <TextView
+                        android:id="@+id/tv_false_smoke_nums"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_false_smoke"
+                        android:text="12"
+                        android:layout_marginTop="@dimen/margin_2"
+
+                        android:textSize="@dimen/size_24" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/tv_false_smoke_nums"
+                        android:layout_toRightOf="@id/tv_false_smoke_nums"
+                        android:gravity="bottom"
+                        android:text="@string/tiao"
+                        />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_Chuanhuo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/chuan_huo"
+                        android:textSize="@dimen/size_12" />
+
+                    <TextView
+                        android:id="@+id/tv_Chuanhuo_nums"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_Chuanhuo"
+                        android:text="24"
+                        android:layout_marginTop="@dimen/margin_2"
+                        android:textSize="@dimen/size_24" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/tv_Chuanhuo_nums"
+                        android:layout_toRightOf="@id/tv_Chuanhuo_nums"
+                        android:gravity="bottom"
+                        android:text="@string/tiao" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/container_chart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@mipmap/chart_bg_n"
+                android:layout_marginTop="@dimen/margin_22"
+                android:orientation="vertical"
+                >
+               <LinearLayout
+                   android:id="@+id/container_tab"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:orientation="vertical">
+                   <TextView
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       android:textColor="@color/color_323232"
+                       android:textSize="@dimen/size_16"
+                       android:gravity="center"
+                       android:layout_marginTop="31dp"
+                       android:text="@string/inspection_statistic"/>
+                   <RadioGroup
+                       android:id="@+id/radioGroup"
+                       android:layout_width="match_parent"
+                       android:layout_height="@dimen/height_radio_button"
+                       android:orientation="horizontal"
+                       android:layout_marginBottom="@dimen/margin_25"
+                       android:layout_marginLeft="@dimen/margin_30"
+                       android:layout_marginRight="@dimen/margin_30"
+                       android:layout_marginTop="24dp">
+
+                       <RadioButton
+                           android:id="@+id/rb_month"
+                           style="@style/RaduioButonStyle"
+                           android:text="@string/month"/>
+
+                       <RadioButton
+                           android:id="@+id/rb_year"
+                           style="@style/RaduioButonStyle"
+                           android:text="@string/year"
+                           android:layout_marginLeft="-1dp"
+                           android:checked="false" />
+
+                   </RadioGroup>
+
+
+               </LinearLayout>
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/lineChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/margin_20"
+                    android:layout_marginRight="@dimen/margin_20"
+                    android:layout_marginBottom="@dimen/margin_40"
+                    />
+
+
+            </LinearLayout>
+            <Button
+                android:id="@+id/btn_detail"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_button"
+                android:layout_marginLeft="@dimen/margin_15"
+                android:layout_marginRight="@dimen/margin_15"
+                android:layout_marginTop="@dimen/margin_20"
+                android:text="@string/inspection_detail"
+                android:textSize="@dimen/size_16"
+                android:textColor="@color/white"
+                android:layout_marginBottom="@dimen/margin_20"
+                android:background="@drawable/selector_btn_inspection"/>
+
+        </LinearLayout>
+
+</ScrollView>

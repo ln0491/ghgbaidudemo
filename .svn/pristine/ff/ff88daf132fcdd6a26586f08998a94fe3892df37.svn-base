@@ -1,0 +1,370 @@
+package com.ghg.tobacco.ui;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.InfoWindow;
+import com.baidu.mapapi.map.MapPoi;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.adapter.CarFormAdapter;
+import com.ghg.tobacco.base.BaseMapActivity;
+import com.ghg.tobacco.bean.Car;
+import com.ghg.tobacco.bean.baidu.Entity;
+import com.ghg.tobacco.bean.baidu.Point;
+import com.ghg.tobacco.bean.baidu.ResponseEntity;
+import com.ghg.tobacco.bean.response.ResponseCar;
+import com.ghg.tobacco.custom_view.MapZoomImageView;
+import com.ghg.tobacco.utils.PhoneUtils;
+import com.ghg.tobacco.utils.ResUtils;
+import com.ghg.tobacco.utils.UnitUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class BusinessCompayOnTheWayActivity extends BaseMapActivity {
+    private ImageView zoom_in, zoom_out, btn_location;
+    private MapZoomImageView zoom;
+    private LatLng mLocationLatLng;
+    private float zoom_level = 14;
+    private float zoom_level_single_car = 18;
+    private String companyName;
+    private TextView tv_end_address;//目的地
+    private TextView tv_start_address;//出发地
+    private BDLocationListener myListener = new MyLocationListener();
+    private List<Marker> markers;
+    private View mInfoWindowView;
+    private Marker mMarker;
+    private ResponseCar carDetail;
+    private boolean isShowInfoWindowView = false;
+    private int type;//1.商业公司2.工业公司
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    for (int i = 0; i < markers.size(); i++) {
+                        Marker marker = markers.get(i);
+                        Bundle bundle = marker.getExtraInfo();
+                        Entity entity = (Entity) marker.getExtraInfo().getSerializable("car");
+                        List<Point> points = entity.realtimepoint;
+                        int index = bundle.getInt("index");
+                        boolean tag = bundle.getBoolean("tag");
+                        if (tag) {
+                            index++;
+                            if (index < points.size()) {
+                                tag = true;
+                            } else {
+                                tag = false;
+                                index = points.size() - 1;
+                            }
+                        } else {
+                            if (index <= 0) {
+                                index++;
+                                tag = true;
+                            } else {
+                                index--;
+                                tag = false;
+                            }
+                        }
+
+                        if (index < points.size()) {
+                            Point point = points.get(index);
+                            LatLng latLng = new LatLng(point.location[1], point.location[0]);
+                            bundle.putInt("index", index);
+                            bundle.putBoolean("tag", tag);
+                            marker.setPosition(latLng);
+                        }
+
+                    }
+
+                    if (isShowInfoWindowView&&mInfoWindowView!=null){
+                        hideInfoWindow();
+                        Entity entity = (Entity) mMarker.getExtraInfo().getSerializable("car");
+                       View view= createInfoWindowView(entity,carDetail);
+                        showInfoWindowView(mMarker.getPosition(),view);
+                    }
+                    mHandler.sendEmptyMessageDelayed(1, 300);
+                    break;
+            }
+        }
+    };
+
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_business_compay_on_the_way;
+    }
+
+    @Override
+    public void initView() {
+
+        setBtnBack();
+        setTitle(ResUtils.getString(this, R.string.title_on_the_way));
+        mMapView = findViewId(R.id.mapView);
+        zoom_in = findViewId(R.id.zoom_in);
+        zoom_out = findViewId(R.id.zoom_out);
+        zoom = findViewId(R.id.zoom);
+        btn_location = findViewId(R.id.btn_location);
+        tv_start_address = findViewId(R.id.tv_start_address);
+        tv_end_address = findViewId(R.id.tv_end_address);
+        zoom.setZoomInOut(zoom_in, zoom_out);
+
+        initMap();
+
+    }
+
+    @Override
+    public void initListener() {
+        btn_location.setOnClickListener(this);
+        zoom.setOnClickListener(new MapZoomImageView.OnClickListener() {
+            @Override
+            public void zoomInClick() {
+                zoomIn();
+            }
+
+            @Override
+            public void zoomOutClick() {
+                zoomOut();
+            }
+        });
+    }
+
+    private void initMap() {
+        mBaiduMap = mMapView.getMap();
+        hideZoomControls();
+        hideLogo();
+        initLocation(myListener);
+        mLocationClient.start();
+        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Entity entity = (Entity) marker.getExtraInfo().getSerializable("car");
+                if (entity == null)
+                    return true;
+//                setZoom(zoom_level);
+                carDetail = Data.getResCar(entity.entity_name);
+                if (type == 1) {
+                    tv_start_address.setText(carDetail.car.departure);
+                } else {
+                    tv_end_address.setText(carDetail.car.destination);
+                }
+                mMarker = marker;
+                LatLng latLng = marker.getPosition();
+
+                mInfoWindowView = createInfoWindowView(entity, carDetail);
+                showInfoWindowView(latLng, mInfoWindowView);
+                setMapCenter(latLng,zoom_level_single_car);
+                return true;
+            }
+        });
+        mBaiduMap.setOnMapClickListener(new BaiduMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if (mMarker != null && mInfoWindowView != null) {
+                    //                    mBaiduMap.hideInfoWindow();
+                    hideInfoWindow();
+                }
+            }
+
+            @Override
+            public boolean onMapPoiClick(MapPoi mapPoi) {
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public void initData() {
+        markers = new ArrayList<>();
+        Intent intent = getIntent();
+        companyName = intent.getStringExtra("companyName");
+        type = intent.getIntExtra("type", 1);
+
+        getResEntity();
+
+        if (type == 1) {
+            tv_end_address.setText(companyName);
+        } else {
+            tv_start_address.setText(companyName);
+            tv_end_address.setTextColor(0xff38c4a9);
+            tv_start_address.setTextColor(0xff323232);
+        }
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+        mHandler.removeMessages(1);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.btn_location:
+                if (mLocationLatLng != null) {
+                    setMapCenter(mLocationLatLng,-1);
+                } else {
+                    if (!mLocationClient.isStarted()) {
+                        mLocationClient.start();
+                    }
+                }
+                break;
+        }
+    }
+
+    private class MyLocationListener implements BDLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            mLocationClient.stop();
+            if (bdLocation == null) {
+                Toast.makeText(BusinessCompayOnTheWayActivity.this, "定位失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            mLocationLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
+            addLocationMark(mLocationLatLng);
+
+        }
+    }
+
+    private boolean mLocationMarkerAdded = false;
+
+    private void addLocationMark(LatLng latLng) {
+        if (latLng == null || mLocationMarkerAdded)
+            return;
+        mLocationMarkerAdded = true;
+        //定义Maker坐标点
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.mipmap.icon_geo);
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(latLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+    }
+
+    private void getResEntity() {
+        ResponseEntity responseEntity = Data.getResEntity();
+        List<Entity> entities = responseEntity.entities;
+        for (int i = 0; i < entities.size(); i++) {
+            Entity entity = entities.get(i);
+            Point point = entity.realtimepoint.get(0);
+            LatLng latLng = new LatLng(point.location[1], point.location[0]);
+            //定义Maker坐标点
+            //构建Marker图标
+            BitmapDescriptor bitmap = BitmapDescriptorFactory
+                    .fromResource(R.mipmap.car_location);
+            //构建MarkerOption，用于在地图上添加Marker
+            MarkerOptions markerOptions=new MarkerOptions();
+
+            OverlayOptions option = new MarkerOptions()
+                    .position(latLng)
+                    .icon(bitmap).anchor(0.5f,0.5f);
+            //在地图上添加Marker，并显示
+            Marker marker = (Marker) mBaiduMap.addOverlay(option);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("car", entity);
+            bundle.putInt("index", 0);
+            bundle.putBoolean("tag", true);
+            marker.setExtraInfo(bundle);
+            markers.add(marker);
+        }
+        Entity entity = entities.get(0);
+        Point point = entity.realtimepoint.get(0);
+        LatLng latLng = new LatLng(point.location[1], point.location[0]);
+//        setZoom(zoom_level);
+        setMapCenter(latLng,zoom_level);
+        mHandler.sendEmptyMessageDelayed(1, 1000);
+    }
+
+    boolean isFrist = true;
+
+    private  View createInfoWindowView(Entity entity, ResponseCar responseCar) {
+        View view = LayoutInflater.from(this).inflate(R.layout.marker_infowindown, null);
+        TextView tv_plate_number = (TextView) view.findViewById(R.id.tv_plate_number);
+        TextView tv_end_address = (TextView) view.findViewById(R.id.tv_end_address);
+        ListView recyclerView = (ListView) view.findViewById(R.id.recyclerView);
+        ImageView btn_call = (ImageView) view.findViewById(R.id.btn_call);
+        final View container_inforWindow = view.findViewById(R.id.container_inforWindow);
+        final View container_head = view.findViewById(R.id.container_head);
+        final RelativeLayout.LayoutParams mParam = (RelativeLayout.LayoutParams) container_inforWindow.getLayoutParams();
+        final Car car = responseCar.car;
+        if (type==1){
+            tv_end_address.setText(companyName);
+        }else {
+            tv_end_address.setText(responseCar.car.destination);
+        }
+        tv_plate_number.setText(car.driverName + " " + car.license);
+
+        btn_call.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String tel = car.driverMobile;
+                if (!TextUtils.isEmpty(tel)) {
+                    PhoneUtils.toCallPhoneActivity(BusinessCompayOnTheWayActivity.this, tel);
+                }
+            }
+        });
+        CarFormAdapter carFormAdapter = new CarFormAdapter(this, responseCar.form);
+        recyclerView.setAdapter(carFormAdapter);
+        int num = responseCar.form.size() >= 3 ? 3 : responseCar.form.size();
+        mParam.width = UnitUtils.dip2px(BusinessCompayOnTheWayActivity.this, 250);
+        mParam.height = UnitUtils.dip2px(this, 70 + 35) + UnitUtils.dip2px(BusinessCompayOnTheWayActivity.this, 35 * num);
+        container_inforWindow.setLayoutParams(mParam);
+
+
+        return view;
+    }
+
+    private void showInfoWindowView(LatLng latLng, View view) {
+        isShowInfoWindowView = true;
+        InfoWindow mInfoWindow = new InfoWindow(view, latLng, -150);
+        //显示InfoWindow
+        mBaiduMap.showInfoWindow(mInfoWindow);
+    }
+
+    private void hideInfoWindow() {
+        //显示InfoWindow
+        mBaiduMap.hideInfoWindow();
+        isShowInfoWindowView = false;
+    }
+}

@@ -1,0 +1,27 @@
+package com.ghg.tobacco.bean.response;
+
+import com.ghg.tobacco.bean.CheckStatistics;
+import com.ghg.tobacco.bean.ReportStatistics;
+
+/**
+ * Created by yicen.wang on 2016/5/11.
+ */
+public class ResponseCheckReport {
+    public String date;//日期
+
+    public int check;//稽查数
+    public int fakes;//假货数
+    public int mix;//串货数
+
+    //稽查
+    public CheckStatistics checkMonth;//按月
+    public CheckStatistics checkYear;//按年
+
+    //举报
+    public int report;//验真伪举报数
+    public ReportStatistics reportMonth;//按月
+    public ReportStatistics reportYear;//按年
+    public ReportStatistics reportArea;//地区举报Top5
+    public ReportStatistics reportShop;//商店举报Top5
+
+}

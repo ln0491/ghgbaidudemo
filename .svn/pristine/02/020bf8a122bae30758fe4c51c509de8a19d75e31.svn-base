@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.BusinessCompanyListActivity">
+
+    <include layout="@layout/base_title"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingBottom="10dp"
+        android:background="@color/colorPrimary">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_search"
+            android:gravity="center">
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/color_transparent"
+                android:paddingTop="9dp"
+                android:paddingBottom="9dp"
+                android:hint="输入商户名称"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:drawableLeft="@mipmap/ic_search"
+                android:drawablePadding="5dp"
+                android:paddingLeft="@dimen/margin_12"
+                android:paddingRight="@dimen/margin_12"/>
+        </LinearLayout>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_title"
+        android:layout_marginTop="@dimen/margin_5"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/tv_area_choose"
+            style="@style/AreaText"
+            android:drawableLeft="@mipmap/ic_map_little_blue"
+            android:textColor="@color/color_38c4a9"/>
+    </LinearLayout>
+    <com.ghg.tobacco.xrecyclerview.XRecyclerView
+        android:id="@+id/rv_detail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

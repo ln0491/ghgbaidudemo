@@ -1,0 +1,15 @@
+package com.ghg.tobacco.bean;
+
+/**
+ * Created by yicen.wang on 2016/5/16.
+ */
+public class BusinessCompany {
+    public int quantity; //共多少家烟草专卖局
+    public int plan;//计划多少箱
+    public int complete;//实际多少箱
+    public int purchase;//进货
+    public int sale;//销售
+    public int inventory;//存货
+    public int inTransitCar;//在途车辆数
+    public int inTransitQuantity;//在途数
+}

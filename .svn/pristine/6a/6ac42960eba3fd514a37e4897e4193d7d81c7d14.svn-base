@@ -1,0 +1,248 @@
+package com.ghg.tobacco.ui;
+
+import android.app.Dialog;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
+
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.model.LatLng;
+import com.ghg.tobacco.GetStaticData;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseMapActivity;
+import com.ghg.tobacco.custom_view.MapZoomImageView;
+import com.ghg.tobacco.utils.DialogUtils;
+import com.ghg.tobacco.utils.UnitUtils;
+
+/**
+ * @author $Author
+ * @version $Rev$
+ * @time 2016/5/16 11:09
+ * @des ${TODO}
+ * @updateAuthor $Author$
+ * @updateDate $Date$
+ * @updateDes ${TODO}
+ */
+public class IndustryCompanyActivity extends BaseMapActivity {
+    private ImageView btnBack;
+    private LatLng mLocationLatLng;
+    private int zoom_country = 5;
+    private int zoom_provices = 8;
+    private int zoom_provice = 10;
+    private Dialog dialog;
+    private boolean isFirstLocation = false;
+    private ImageView zoom_in, zoom_out, btn_location;
+    private MapZoomImageView zoom;
+    private View container_industry;
+
+    public BDLocationListener myListener = new MyLocationListener();
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    DialogUtils.loadingDialogDismiss(dialog);
+                    break;
+                case 2:
+                    DialogUtils.loadingDialogDismiss(dialog);
+                    break;
+                case 3:
+                    DialogUtils.loadingDialogDismiss(dialog);
+                    break;
+
+            }
+
+        }
+    };
+
+    private RelativeLayout.LayoutParams mParams;
+
+
+    @Override
+    public int bindLayout() {
+        return R.layout
+                .activity_business_company;
+    }
+
+    @Override
+    public void initView() {
+        setTitle(getResources().getString(R.string.title_map_business));
+        setBtnMenu();
+
+        btnBack = findViewId(R.id.btn_back);
+        mMapView = findViewId(R.id.mapView);
+        zoom_in = findViewId(R.id.zoom_in);
+        zoom_out = findViewId(R.id.zoom_out);
+        zoom = findViewId(R.id.zoom);
+        btn_location = findViewId(R.id.btn_location);
+        initMap();
+
+        zoom.setZoomInOut(zoom_in, zoom_out);
+
+    }
+
+    private void initMap() {
+        mBaiduMap = mMapView.getMap();
+        hideZoomControls();
+        hideLogo();
+        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Bundle bundle = marker.getExtraInfo();
+                if (bundle == null) {
+                    return true;
+                }
+                return true;
+            }
+
+
+        });
+        initLocation(myListener);
+        mLocationClient.start();
+        isFirstLocation = true;
+    }
+
+    @Override
+    public void initListener() {
+        btnBack.setOnClickListener(this);
+        btn_location.setOnClickListener(this);
+        zoom.setOnClickListener(new MapZoomImageView.OnClickListener() {
+            @Override
+            public void zoomInClick() {
+                zoomIn();
+            }
+
+            @Override
+            public void zoomOutClick() {
+                zoomOut();
+            }
+        });
+    }
+
+    @Override
+    public void initData() {
+
+    }
+
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+        mHandler.removeMessages(1);
+        mHandler.removeMessages(2);
+        mHandler.removeMessages(3);
+        if (GetStaticData.businessCompanyCityMap != null) {
+            GetStaticData.businessCompanyCityMap.clear();
+            GetStaticData.businessCompanyCityMap = null;
+        }
+        if (GetStaticData.businessCompanyProvinceList != null) {
+            GetStaticData.businessCompanyProvinceList.clear();
+            GetStaticData.businessCompanyProvinceList = null;
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.btn_menu:
+                break;
+            case R.id.btn_back:
+
+                break;
+
+            case R.id.btn_location:
+                if (mLocationLatLng == null) {
+                    if (!mLocationClient.isStarted()) {
+                        mLocationClient.start();
+                    }
+                } else {
+                    addLocationMark();
+                }
+                break;
+        }
+    }
+
+
+    private void addLocationMark() {
+        //定义Maker坐标点
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.mipmap.icon_geo);
+        //构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(mLocationLatLng)
+                .icon(bitmap);
+        //在地图上添加Marker，并显示
+        Marker marker = (Marker) mBaiduMap.addOverlay(option);
+        //初次进入页面定位不设置mLocationLatLng为中心点
+        if (!isFirstLocation) {
+            setMapCenter(mLocationLatLng);
+        }
+        isFirstLocation = false;
+    }
+
+
+    private class MyLocationListener implements BDLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            mLocationClient.stop();
+            if (bdLocation == null) {
+                isFirstLocation = false;
+                Toast.makeText(IndustryCompanyActivity.this, "定位失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Toast.makeText(IndustryCompanyActivity.this, bdLocation.getAddrStr(), Toast.LENGTH_SHORT).show();
+            mLocationLatLng = new LatLng(bdLocation.getLatitude(), bdLocation.getLongitude());
+            addLocationMark();
+
+        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        btnBack.performClick();
+    }
+
+
+
+
+    private void setBottomViewVisible(boolean isVisible) {
+        if (!isVisible) {
+            mParams.height = 0;
+        } else {
+
+            mParams.height = UnitUtils.dip2px(this, 140);
+        }
+
+        container_industry.setLayoutParams(mParams);
+    }
+
+
+}

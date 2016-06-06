@@ -1,0 +1,97 @@
+ [
+    {
+      "id": 101,
+      "name": "黄鹤楼（硬彩）",
+      "categoryId": 1
+    },
+    {
+      "id": 102,
+      "name": "黄鹤楼（好运）",
+      "categoryId": 1
+    },
+    {
+      "id": 103,
+      "name": "黄鹤楼（软1916）",
+      "categoryId": 1
+    },
+    {
+      "id": 104,
+      "name": "黄鹤楼（硬1916）",
+      "categoryId": 1
+    },
+    {
+      "id": 105,
+      "name": "黄鹤楼（软珍品）",
+      "categoryId": 1
+    },
+    {
+      "id": 106,
+      "name": "黄鹤楼（软紫金）",
+      "categoryId": 1
+    },
+    {
+      "id": 107,
+      "name": "黄鹤楼（软漫天游）",
+      "categoryId": 1
+    },
+    {
+      "id": 108,
+      "name": "白沙（和天下）",
+      "categoryId": 2
+    },
+    {
+      "id": 109,
+      "name": "白沙（和钻石）",
+      "categoryId": 2
+    },
+    {
+      "id": 110,
+      "name": "白沙（软和天下）",
+      "categoryId": 2
+    },
+    {
+      "id": 111,
+      "name": "白沙（软精品）",
+      "categoryId": 2
+    },
+    {
+      "id": 112,
+      "name": "黄金叶（天香细支）",
+      "categoryId": 3
+    },
+    {
+      "id": 113,
+      "name": "黄金叶（天叶）",
+      "categoryId": 3
+    },
+    {
+      "id": 114,
+      "name": "黄金叶（天叶细支）",
+      "categoryId": 3
+    },
+    {
+      "id": 115,
+      "name": "黄金叶（小天叶）",
+      "categoryId": 3
+    },
+    {
+      "id": 116,
+      "name": "双喜（典藏五叶神）",
+      "categoryId": 5
+    },
+    {
+      "id": 117,
+      "name": "双喜（典藏逸品）",
+      "categoryId": 5
+    },
+    {
+      "id": 118,
+      "name": "双喜（珍藏）",
+      "categoryId": 5
+    },
+    {
+      "id": 119,
+      "name": "双喜（硬逸品）",
+      "categoryId": 5
+    }
+  ]

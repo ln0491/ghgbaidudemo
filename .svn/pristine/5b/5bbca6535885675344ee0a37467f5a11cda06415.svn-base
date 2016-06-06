@@ -1,0 +1,313 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_f5f5f5"
+    android:orientation="vertical"
+    tools:context=".fragment.InspectionFragment">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/color_f5f5f5"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_title"
+                android:layout_marginTop="@dimen/margin_10"
+                android:orientation="horizontal">
+
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <TextView
+                    style="@style/AreaText"
+                    android:drawableRight="@mipmap/btn_arrow_down_nomal"
+                    android:text="广东省" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="@dimen/height_line"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/vertical_line" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    style="@style/AreaText"
+                    android:drawableRight="@mipmap/btn_arrow_down_nomal"
+                    android:text="深圳市" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="@dimen/height_line"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/vertical_line" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <TextView
+                    style="@style/AreaText"
+                    android:drawableRight="@mipmap/btn_arrow_down_nomal"
+                    android:text="南山区" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_area"
+                android:layout_marginBottom="@dimen/margin_10"
+                android:layout_marginTop="@dimen/margin_10"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/margin_20"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_month"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="JAN"
+                        android:textSize="@dimen/size_12" />
+
+                    <TextView
+                        android:id="@+id/tv_day"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_month"
+                        android:layout_marginTop="@dimen/margin_2"
+                        android:text="24"
+                        android:textSize="@dimen/size_24" />
+
+
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="@dimen/margin_20"
+                    android:background="@drawable/vertical_line" />
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_inspection"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/check_true_or_false"
+                        android:textSize="@dimen/size_12" />
+
+                    <TextView
+                        android:id="@+id/tv_check_nums"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_inspection"
+                        android:layout_marginTop="@dimen/margin_2"
+                        android:text="24"
+                        android:textSize="@dimen/size_24" />
+
+                    <TextView
+                        android:id="@+id/tv_d"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/tv_check_nums"
+                        android:layout_toRightOf="@id/tv_check_nums"
+                        android:gravity="bottom"
+                        android:text="@string/ci" />
+
+                </RelativeLayout>
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="420dp"
+                android:background="@mipmap/chart_bg_n"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/margin_10"
+                android:paddingRight="@dimen/margin_10"
+                android:paddingBottom="@dimen/margin_10">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin_15"
+                    android:gravity="center"
+                    android:text="@string/report_statistic"
+                    android:textColor="@color/color_323232"
+                    android:textSize="@dimen/size_16" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/height_radio_button"
+                    android:layout_marginLeft="@dimen/margin_15"
+                    android:layout_marginRight="@dimen/margin_15"
+                    android:layout_marginTop="@dimen/margin_15"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/rb_month"
+                        style="@style/RaduioButonStyle"
+                        android:text="@string/month" />
+
+                    <RadioButton
+                        android:id="@+id/rb_year"
+                        style="@style/RaduioButonStyle"
+                        android:layout_marginLeft="-1dp"
+                        android:checked="false"
+                        android:text="@string/year" />
+
+                </RadioGroup>
+
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/lineChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/height_line_chart_resport"
+                    android:paddingLeft="@dimen/margin_5"
+                    android:paddingRight="@dimen/margin_5"
+                    android:layout_marginTop="@dimen/margin_10" />
+
+
+            </LinearLayout>
+
+
+           <LinearLayout
+               android:id="@+id/container_area_top5"
+               android:layout_width="match_parent"
+               android:layout_height="250dp"
+               android:paddingLeft="@dimen/margin_10"
+               android:paddingRight="@dimen/margin_10"
+               android:background="@mipmap/chart_bg_n"
+               android:layout_marginTop="@dimen/margin_5"
+               android:orientation="vertical">
+
+               <TextView
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:gravity="center"
+                   android:textColor="@color/color_686868"
+                   android:textSize="@dimen/size_16"
+                   android:layout_marginTop="@dimen/margin_10"
+                   android:text="@string/resport_area_top5"
+                  />
+               <TextView
+                   android:id="@+id/tv_date"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:gravity="center"
+                   android:textColor="@color/color_969696"
+                   android:textSize="@dimen/size_15"
+                   android:layout_marginTop="@dimen/margin_5"
+                   android:text="2016年5月"
+                   />
+               <com.github.mikephil.charting.charts.HorizontalBarChart
+                   android:id="@+id/horizontalBarChart"
+                   android:layout_width="match_parent"
+                   android:paddingLeft="@dimen/margin_5"
+                   android:paddingRight="@dimen/margin_5"
+                   android:layout_marginTop="@dimen/margin_10"
+                   android:layout_height="@dimen/height_top5_area"
+                   />
+
+           </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/container_shop_top5"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:paddingLeft="@dimen/margin_10"
+                android:paddingRight="@dimen/margin_10"
+                android:background="@mipmap/chart_bg_n"
+                android:layout_marginTop="@dimen/margin_15"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/color_686868"
+                    android:layout_marginTop="@dimen/margin_10"
+                    android:textSize="@dimen/size_16"
+                    android:text="@string/resport_shop_top5"
+                    />
+                <TextView
+                    android:id="@+id/tv_date_shop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/color_969696"
+                    android:textSize="@dimen/size_15"
+                    android:layout_marginTop="@dimen/margin_5"
+                    android:text="2016年5月"
+                    />
+                <com.github.mikephil.charting.charts.HorizontalBarChart
+                    android:id="@+id/horizontalBarChartShop"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="@dimen/margin_5"
+                    android:layout_marginRight="@dimen/margin_5"
+                    android:layout_marginTop="@dimen/margin_10"
+                    android:layout_height="@dimen/height_top5_area"
+                    />
+
+            </LinearLayout>
+
+
+            <Button
+                android:id="@+id/btn_detail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/margin_20"
+                android:layout_marginLeft="@dimen/margin_15"
+                android:layout_marginRight="@dimen/margin_15"
+                android:layout_marginTop="@dimen/margin_20"
+                android:background="@drawable/selector_btn_inspection"
+                android:text="@string/inspection_detail"
+                android:textColor="@color/white"
+                android:textSize="@dimen/size_16" />
+
+        </LinearLayout>
+
+</ScrollView>

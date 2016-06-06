@@ -1,0 +1,105 @@
+package com.ghg.tobacco.ui;
+
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.response.ResponseCompanyAmount;
+import com.ghg.tobacco.utils.ResUtils;
+import com.ghg.tobacco.utils.UnitUtils;
+import com.github.mikephil.charting.charts.LineChart;
+
+/**
+ * 省商业公司进货量
+ */
+public class ProvinceBusinessCompanyPurchaseActivity extends BaseActivity {
+
+    private LineChart mLineChart;
+    private TextView tv_chart_describe;
+    private LinearLayout container_chart;
+    private int[] mColors;
+    private int space;
+    private boolean isFrist;
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_province_business_company_purchase;
+    }
+
+    @Override
+    public void initView() {
+        setBtnBack();
+        mLineChart=findViewId(R.id.lineChart);
+        tv_chart_describe=findViewId(R.id.tv_chart_describe);
+        tv_chart_describe.setText(ResUtils.getString(this,R.string.plan_purchase_linechart_describe));
+        container_chart=findViewId(R.id.container_chart);
+        mColors= new int[]{
+                getResources().getColor(R.color.color_blue),
+                getResources().getColor(R.color.color_fdbc3b),
+        };
+        initLineChartChart(mLineChart,mColors);
+    }
+
+    @Override
+    public void initListener() {
+
+    }
+
+    @Override
+    public void initData() {
+
+        ResponseCompanyAmount companyAmount=Data.getResBusinessCompanyAmount(Constants.Area.PROVINCE,0,"");
+        setLineData(mLineChart,companyAmount.formData,mColors);
+        space=companyAmount.formData.space;
+
+        tv_chart_describe.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                if (isFrist){
+                    if (space!=0){
+                        setChartHeight(container_chart,tv_chart_describe.getHeight(),space);
+                    }
+                    isFrist=false;
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+    private void setChartHeight(LinearLayout layout,int height,int space) {
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) layout.getLayoutParams();
+        height = UnitUtils.dip2px(this, space * 50 + 40 + 31) + height;
+        layoutParams.height = height;
+        layout.setLayoutParams(layoutParams);
+    }
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="90dp"
+          android:gravity="center"
+          android:id="@+id/tv_cigarette_brand"
+          android:orientation="vertical"
+          android:textSize="@dimen/size_16"
+          android:textColor="@drawable/selector_text_cigarette_brand"
+          android:background="@drawable/selector_text_cigarette_brand_bg"
+          android:text="343">
+
+</TextView>

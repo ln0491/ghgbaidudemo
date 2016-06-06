@@ -1,0 +1,170 @@
+package com.ghg.tobacco.ui;
+
+import android.content.Intent;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+
+import com.ghg.tobacco.Constants;
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.FormData;
+import com.ghg.tobacco.bean.response.ResponseCompanyAmount;
+import com.ghg.tobacco.utils.MathUtils;
+import com.ghg.tobacco.utils.ResUtils;
+import com.github.mikephil.charting.charts.LineChart;
+
+/**
+ * 工业公司销售计划和产量统计图
+ */
+public class IndustryCompanySalePlanActivity extends BaseActivity {
+
+    private LineChart mLineChart;
+    private TextView tv_chart_describe;
+    private TextView tv_compelete_rate, tv_real_account, tv_plan_account, tv_real, tv_plan, tv_year_plan;
+    private LinearLayout container_chart;
+    private int[] mColors;
+    private int space;
+    private boolean isFrist = true;
+    private RadioGroup mRadioGroup;
+    private RadioButton rb_season;
+    private View container_tab;
+
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_province_business_company_purchase;
+    }
+
+    @Override
+    public void initView() {
+        setBtnBack();
+        mLineChart = findViewId(R.id.lineChart);
+        tv_chart_describe = findViewId(R.id.tv_chart_describe);
+        container_chart = findViewId(R.id.container_chart);
+        tv_compelete_rate = findViewId(R.id.tv_compelete_rate);
+        tv_real_account = findViewId(R.id.tv_real_account);
+        tv_plan_account = findViewId(R.id.tv_plan_account);
+        tv_year_plan = findViewId(R.id.tv_year_plan);
+        tv_real = findViewId(R.id.tv_real);
+        tv_plan = findViewId(R.id.tv_plan);
+        mRadioGroup = findViewId(R.id.radioGroup);
+        rb_season = findViewId(R.id.rb_season);
+        container_tab = findViewId(R.id.container_tab);
+        mColors = new int[]{
+                getResources().getColor(R.color.color_blue),
+                getResources().getColor(R.color.color_fdbc3b),
+        };
+        initLineChartChart(mLineChart, mColors);
+    }
+
+    @Override
+    public void initListener() {
+        container_tab.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                if (isFrist) {
+                    if (space != 0) {
+                        setChartHeight(container_chart, container_tab.getHeight(), space);
+                    }
+                    isFrist = false;
+                }
+            }
+        });
+
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                ResponseCompanyAmount companyAmount = null;
+                switch (checkedId) {
+                    case R.id.rb_day:
+                        companyAmount = Data.getResBusinessCompanyAmount(Constants.Area.AREA, 2, "");
+                        setLineData(companyAmount, 0);
+                        //                        setLineData(mLineChart, checkData.formData, mColors, 0);
+                        break;
+                    case R.id.rb_month:
+                        companyAmount = Data.getResBusinessCompanyAmount(Constants.Area.CITY, 2, "");
+                        //                        setLineData(mLineChart, checkData.formData, mColors, 0);
+                        setLineData(companyAmount, 0);
+                        break;
+                    case R.id.rb_season:
+                        companyAmount = Data.getResBusinessCompanyAmount(Constants.Area.PROVINCE, 2, "");
+                        setLineData(companyAmount, 0.2f);
+                        break;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void initData() {
+        Intent intent = getIntent();
+        int type = intent.getIntExtra("type", 1);//1.产量 2.销售
+        ResponseCompanyAmount companyAmount = null;
+        if (type == 1) {//产量
+            tv_chart_describe.setText(ResUtils.getString(this, R.string.industry_output_linechart_describe));
+            tv_year_plan.setText(ResUtils.getString(this, R.string.year_output_plan));
+            tv_real.setText(ResUtils.getString(this, R.string.actual_output));
+            tv_plan.setText(ResUtils.getString(this, R.string.plan_output));
+            mRadioGroup.setVisibility(View.VISIBLE);
+            rb_season.setChecked(true);
+        } else {//销售
+            companyAmount = Data.getResBusinessCompanyAmount(Constants.Area.CITY, 1, "");
+            tv_real.setText(ResUtils.getString(this, R.string.actual_sale));
+            tv_plan.setText(ResUtils.getString(this, R.string.plan_sale));
+            tv_chart_describe.setText(ResUtils.getString(this, R.string.province_company_plan_sale_linechart_describe));
+            tv_year_plan.setText(ResUtils.getString(this, R.string.year_sale_plan));
+            setLineData(companyAmount, 0);
+
+        }
+
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    private void setLineData(ResponseCompanyAmount companyAmount, float lastAnchorX) {
+        FormData formData = companyAmount.formData;
+        setLineData(mLineChart, formData, mColors, lastAnchorX);
+        space = formData.space;
+        tv_real_account.setText(String.valueOf(companyAmount.fact));
+        tv_plan_account.setText(String.valueOf(companyAmount.plan));
+        tv_compelete_rate.setText(MathUtils.formatDouble(100 * companyAmount.fact / companyAmount.plan) + "%");
+        if (companyAmount != null) {
+            space = companyAmount.formData.space;
+            int height = container_tab.getHeight();
+            if (height != 0) {
+                setChartHeight(container_chart, height, space);
+            }
+        }
+    }
+
+}

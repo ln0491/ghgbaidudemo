@@ -1,0 +1,142 @@
+package com.ghg.tobacco.ui;
+
+import android.app.Dialog;
+import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.view.View;
+import android.widget.TextView;
+
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.adapter.InspectionDetailAdapter;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.CheckReportDetail;
+import com.ghg.tobacco.utils.DialogUtils;
+import com.ghg.tobacco.xrecyclerview.ProgressStyle;
+import com.ghg.tobacco.xrecyclerview.XRecyclerView;
+
+import java.util.List;
+
+/**
+ * Created by yicen.wang on 2016/5/13.
+ */
+public class InspectionDetailActivity extends BaseActivity {
+
+    private TextView mTextViewLocation;
+    private XRecyclerView mRecyclerViewDetail;
+    private Dialog dialog;
+
+    private InspectionDetailAdapter adapter;
+
+    private String province="广东";
+    private String city="深圳市";
+    private String area="罗湖区";
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_inspection_detail;
+    }
+
+    @Override
+    public void initView() {
+        setBtnBack();
+        setTitle(getResources().getString(R.string.inspection_detail));
+        mTextViewLocation = findViewId(R.id.tv_location);
+        mRecyclerViewDetail = findViewId(R.id.rv_detail);
+
+    }
+
+    @Override
+    public void initListener() {
+
+    }
+
+    @Override
+    public void initData() {
+        Bundle bu = getIntent().getExtras();
+        try{
+            province = bu.getString("province");
+            city = bu.getString("city");
+            area = bu.getString("area");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        mTextViewLocation.setText(province+" "+city+" "+area);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerViewDetail.setLayoutManager(linearLayoutManager);
+        mRecyclerViewDetail.setLoadingMoreProgressStyle(ProgressStyle.BallRotate);
+
+        mRecyclerViewDetail.setRefreshProgressStyle(ProgressStyle.BallSpinFadeLoader);
+
+        List<CheckReportDetail> mData= Data.getResCheckDetail().detail;
+
+        adapter = new InspectionDetailAdapter(this, mData);
+        mRecyclerViewDetail.setAdapter(adapter);
+        mRecyclerViewDetail.setLoadingMoreEnabled(true);
+        mRecyclerViewDetail.setLoadingListener(new XRecyclerView.LoadingListener() {
+            @Override
+            public void onRefresh() {
+                dialog= DialogUtils.loadingDialog(InspectionDetailActivity.this);
+                mRecyclerViewDetail.setLoadingMoreEnabled(false);
+                mRecyclerViewDetail.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        DialogUtils.loadingDialogDismiss(dialog);
+                        adapter.clear();
+                        List<CheckReportDetail> mData= Data.getResCheckDetail().detail;
+                        adapter.addItemLast(mData);
+                        adapter.notifyDataSetChanged();
+                        mRecyclerViewDetail.refreshComplete();
+                        mRecyclerViewDetail.setLoadingMoreEnabled(true);
+                    }
+                }, 1000);
+            }
+
+            @Override
+            public void onLoadMore() {
+                dialog=DialogUtils.loadingDialog(InspectionDetailActivity.this);
+                mRecyclerViewDetail.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        DialogUtils.loadingDialogDismiss(dialog);
+                        mRecyclerViewDetail.setPullRefreshEnabled(false);
+                        List<CheckReportDetail> mData= Data.getResCheckDetail().detail;
+                        adapter.addItemLast(mData);
+                        adapter.notifyDataSetChanged();
+                        mRecyclerViewDetail.loadMoreComplete();
+                        mRecyclerViewDetail.setPullRefreshEnabled(true);
+                    }
+                }, 1000);
+
+            }
+        });
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+        }
+    }
+}

@@ -1,0 +1,190 @@
+package com.ghg.tobacco.ui;
+
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.ExpandableListView;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.ghg.tobacco.Data;
+import com.ghg.tobacco.R;
+import com.ghg.tobacco.adapter.CompanyListAdapter;
+import com.ghg.tobacco.base.BaseActivity;
+import com.ghg.tobacco.bean.BusinessCompany;
+import com.ghg.tobacco.utils.DialogUtils;
+import com.ghg.tobacco.utils.ResUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * 商业公司列表
+ */
+public class BusinessCompanyListActivity extends BaseActivity {
+
+    private ExpandableListView mExpandableListView;
+    private List<BusinessCompany> companies;
+    private List<BusinessCompany> cityCompanies;
+    private Dialog dialog;
+    private CompanyListAdapter mAdapter;
+    private Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    if (companies == null) {
+                        DialogUtils.loadingDialogDismiss(dialog);
+                        Toast.makeText(BusinessCompanyListActivity.this, ResUtils.getString(BusinessCompanyListActivity.this, R.string.data_empty), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    getCityBusinessCompanies();
+
+                    break;
+
+                case 2:
+
+                    if (cityCompanies != null) {
+                        HashMap<String, List<BusinessCompany>> childs = addCityCompanies(companies, cityCompanies);
+                        mAdapter = new CompanyListAdapter(BusinessCompanyListActivity.this, companies, childs);
+                        mExpandableListView.setAdapter(mAdapter);
+                        DialogUtils.loadingDialogDismiss(dialog);
+                    }
+                    break;
+            }
+        }
+    };
+
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_company_list;
+    }
+
+    @Override
+    public void initView() {
+
+        setBtnBack();
+        setTitle(ResUtils.getString(this, R.string.title_company_list));
+        ImageView btnLocation = setBtnMenu();
+        btnLocation.setImageResource(R.drawable.selector_btn_title_location);
+        mExpandableListView = findViewId(R.id.expandListView);
+    }
+
+    @Override
+    public void initListener() {
+        //        mExpandableListView.setOnGroupExpandListener();
+        mExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                BusinessCompany businessCompany = mAdapter.getChild(groupPosition, childPosition);
+                Intent intent = new Intent(BusinessCompanyListActivity.this, BusinessCompanyDetailActivity.class);
+                Random random = new Random();
+                businessCompany.sale= (double)random.nextInt(800);
+                businessCompany.inventory= (double)random.nextInt(800);
+                businessCompany.purchase= (double)random.nextInt(800);
+                businessCompany.inTransitCar=random.nextInt(800);
+                businessCompany.inTransitNum=random.nextInt(800*100);
+//                random.nextInt(8)
+                intent.putExtra("company", businessCompany);
+                if (childPosition == 0) {
+                    intent.putExtra("type", 1);
+                } else {
+                    intent.putExtra("type", 2);
+                }
+                startActivity(intent);
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public void initData() {
+
+        getProvinceBusinessCompanies();
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void destroy() {
+        mHandler.removeMessages(1);
+        mHandler.removeMessages(2);
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.btn_menu:
+                finish();
+                break;
+        }
+    }
+
+    private void getProvinceBusinessCompanies() {
+        dialog = DialogUtils.loadingDialog(this);
+        dialog.setCancelable(true);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                companies = Data.getProvinceBusinessCompanyData(BusinessCompanyListActivity.this);
+                mHandler.sendEmptyMessage(1);
+            }
+        }).start();
+
+    }
+
+
+    private void getCityBusinessCompanies() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                cityCompanies = Data.getCityBusinessCompanysData(BusinessCompanyListActivity.this);
+                mHandler.sendEmptyMessage(2);
+            }
+        }).start();
+
+    }
+
+    private HashMap<String, List<BusinessCompany>> addCityCompanies(List<BusinessCompany> mProvinceCompanies, List<BusinessCompany> cityCompaines) {
+        HashMap<String, List<BusinessCompany>> mChilds = new HashMap<String, List<BusinessCompany>>();
+        for (int i = 0; i < mProvinceCompanies.size(); i++) {
+            List<BusinessCompany> companies = new ArrayList<BusinessCompany>();
+            BusinessCompany provinceCompany = mProvinceCompanies.get(i);
+            for (int j = 0; j < cityCompaines.size(); j++) {
+                BusinessCompany cityCompany = cityCompaines.get(j);
+                if (!TextUtils.isEmpty(provinceCompany.province) && !TextUtils.isEmpty(cityCompany.province) && cityCompany.province.equals(provinceCompany.province)) {
+                    companies.add(cityCompany);
+                }
+            }
+
+            companies.add(0, provinceCompany);
+            mChilds.put(provinceCompany.province, companies);
+            cityCompaines.removeAll(companies);
+        }
+        return mChilds;
+    }
+
+}

@@ -1,0 +1,13 @@
+package com.ghg.tobacco.bean.response;
+
+import com.ghg.tobacco.bean.PlanCompleteAmount;
+
+
+/**
+ * Created by yicen.wang on 2016/5/12.
+ */
+public class ResponseBigData {
+	
+	public PlanCompleteAmount amount;
+	
+}

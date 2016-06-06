@@ -1,0 +1,592 @@
+package com.ghg.tobacco;
+
+import android.content.Context;
+import android.text.TextUtils;
+
+import com.alibaba.fastjson.JSONArray;
+import com.ghg.tobacco.bean.BusinessCompany;
+import com.ghg.tobacco.bean.CheckReportDetail;
+import com.ghg.tobacco.bean.CheckStatistics;
+import com.ghg.tobacco.bean.Inventory;
+import com.ghg.tobacco.bean.Invoicing;
+import com.ghg.tobacco.bean.PlanCompleteAmount;
+import com.ghg.tobacco.bean.RegionJson;
+import com.ghg.tobacco.bean.ReportStatistics;
+import com.ghg.tobacco.bean.response.ResponseBigData;
+import com.ghg.tobacco.bean.response.ResponseBusinessCompany;
+import com.ghg.tobacco.bean.response.ResponseBusinessCompanyAmount;
+import com.ghg.tobacco.bean.response.ResponseBusinessCompanyInventory;
+import com.ghg.tobacco.bean.response.ResponseCheck;
+import com.ghg.tobacco.bean.response.ResponseCheckReportDetail;
+import com.ghg.tobacco.bean.response.ResponseInventory;
+import com.ghg.tobacco.bean.response.ResponseReport;
+import com.ghg.tobacco.bean.response.ResponseReportTop5;
+import com.ghg.tobacco.bean.test.BusinessCompanyData;
+import com.ghg.tobacco.bean.test.RegionData;
+import com.ghg.tobacco.utils.FileUtils;
+
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+
+/**
+ * Created by yicen.wang on 2016/5/11.
+ */
+public class Data {
+
+    /**
+     * 稽查举报--稽查
+     *
+     * @param type
+     * @return
+     */
+    public static ResponseCheck getResCheck(int type) {
+        ResponseCheck result = new ResponseCheck();
+        result.date = getToday();// 日期
+        result.check = 332;// 稽查数
+        result.fakes = 38;// 假货数
+        result.mix = 14;// 串货数
+        CheckStatistics statistics = getCheck(type);
+        result.statistics = statistics;
+        return result;
+    }
+
+    /**
+     * 稽查举报--举报
+     *
+     * @param type
+     * @return
+     */
+    public static ResponseReport getResReport(int type) {
+        Random random = new Random();
+        ResponseReport result = new ResponseReport();
+        result.date = getToday();// 日期
+        result.report = 100;// 验真伪举报数
+        ReportStatistics statistics = getReport(type);
+
+        List<Integer> report = new ArrayList<>();
+
+        switch (type) {
+            case GetStaticData.TYPE_MONTH:
+                statistics.label = Arrays.asList(GetStaticData.monthArr);
+                for (int i = 0; i < statistics.label.size(); i++) {
+                    report.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                }
+
+                break;
+            case GetStaticData.TYPE_YEAR:
+                statistics.label = Arrays.asList(GetStaticData.yearArr);
+                for (int i = 0; i < statistics.label.size(); i++) {
+                    report.add(GetStaticData.DATA_B[random.nextInt(8)]);
+                }
+                break;
+        }
+        statistics.report = report;
+        result.statistics = statistics;
+        return result;
+    }
+
+    /**
+     * 稽查举报--地区和商店举报Top5
+     *
+     * @param type
+     * @param value
+     * @return
+     */
+    public static ResponseReportTop5 getResReportTop5(int type, int value) {
+        Random random = new Random();
+        ResponseReportTop5 result = new ResponseReportTop5();
+        ReportStatistics staArea = new ReportStatistics();
+        ReportStatistics staShop = new ReportStatistics();
+
+        List<String> areas = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            areas.add(GetStaticData.areaArr[random.nextInt(8)]);
+        }
+        List<String> shops = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            shops.add(GetStaticData.shopArr[random.nextInt(8)]);
+        }
+        staArea.label = areas;
+        staShop.label = shops;
+
+        List<Integer> reportArea = new ArrayList<>();
+        List<Integer> reportShop = new ArrayList<>();
+
+        switch (type) {
+            case GetStaticData.TYPE_MONTH:
+                for (int i = 0; i < 5; i++) {
+                    reportArea.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                    reportShop.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                }
+
+                break;
+            case GetStaticData.TYPE_YEAR:
+                for (int i = 0; i < 5; i++) {
+                    reportArea.add(GetStaticData.DATA_M[random.nextInt(8)]);
+                    reportShop.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                }
+                break;
+        }
+        staArea.report = reportArea;
+        staShop.report = reportShop;
+
+        result.reportArea = staArea;
+        result.reportShop = staShop;
+
+        return result;
+    }
+
+    /**
+     * 稽查举报--稽查/举报详情
+     *
+     * @return
+     */
+    public static ResponseCheckReportDetail getResCheckDetail() {
+        Random random = new Random();
+        ResponseCheckReportDetail result = new ResponseCheckReportDetail();
+        List<CheckReportDetail> detail = new ArrayList<>();// 详情
+
+        for (int i = 0; i < 12; i++) {
+            CheckReportDetail t = new CheckReportDetail();
+            t.id = i;
+            t.checktime = GetStaticData.timeArr[random.nextInt(8)];// 时间
+            t.checkResult = random.nextInt(2)+ 1;// 类型（假、串）
+            t.cigaretteId = random.nextInt(8);// 香烟编号
+            t.cigaretteName = GetStaticData.cigaretteArr[t.cigaretteId];// 香烟名
+            t.shopId = random.nextInt(8);// 商店编号
+            t.shopName = GetStaticData.shopArr[t.shopId];// 商店名称
+            t.shopAddress = GetStaticData.addressArr[t.shopId];// 商店地址
+            t.shopMobile = "123456";// 商店电话
+
+            detail.add(t);
+        }
+
+        result.detail = detail;
+        return result;
+    }
+
+    /**
+     * 产量
+     * @param dateType 时间类型
+     * @return
+     */
+    public static ResponseBigData getResProduce(int dateType) {
+        ResponseBigData result = new ResponseBigData();
+        result.amount = getPlanCompleteAmount(dateType);
+        return result;
+    }
+
+    /**
+     * 大数据--销量
+     * @param dateType 时间类型
+     * @param type 公司类型（0：工业公司；1：商业公司；2：商户）
+     * @return
+     */
+    public static ResponseBigData getResSale(int dateType,int type) {
+        ResponseBigData result = new ResponseBigData();
+        result.amount = getPlanCompleteAmount(dateType);
+        return result;
+    }
+
+    /**
+     * 大数据--库存
+     * @param dateType
+     * @param type 公司类型（0：工业公司；1：商业公司；2：商户）
+     * @return
+     */
+    public static ResponseInventory getResInventory(int dateType,int type) {
+        ResponseInventory result = new ResponseInventory();
+        result.inventory = getInventory(type);
+        return result;
+    }
+
+    /**
+     * 计划完成量
+     * @param type
+     * @return
+     */
+    public static PlanCompleteAmount getPlanCompleteAmount(int type) {
+        Random random = new Random();
+        PlanCompleteAmount result = new PlanCompleteAmount();
+
+        List<Integer> plan = new ArrayList<>();
+        List<Integer> complete = new ArrayList<>();
+
+        switch (type) {
+
+            case GetStaticData.TYPE_MONTH:
+                result.label = Arrays.asList(GetStaticData.monthArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    plan.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                    complete.add(plan.get(i) - 100);
+                }
+                break;
+            case GetStaticData.TYPE_SEASON:
+                result.label = Arrays.asList(GetStaticData.seasonArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    plan.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                    complete.add(plan.get(i) - 500);
+                }
+                break;
+            case GetStaticData.TYPE_YEAR:
+                result.label = Arrays.asList(GetStaticData.yearArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    plan.add(GetStaticData.DATA_M[random.nextInt(8)]);
+                    complete.add(plan.get(i) - 1580);
+                }
+                break;
+        }
+        result.plan = plan;
+        result.complete = complete;
+
+        return result;
+    }
+
+    /**
+     * 库存
+     * @param type
+     * @return
+     */
+    public static Inventory getInventory(int type) {
+        Random random = new Random();
+        Inventory result = new Inventory();
+
+        List<Integer> inv = new ArrayList<>();
+
+        switch (type) {
+            case GetStaticData.TYPE_INDUSTRY:
+                result.label = Arrays.asList(GetStaticData.monthArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    inv.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                }
+                break;
+            case GetStaticData.TYPE_COMPANY:
+                result.label = Arrays.asList(GetStaticData.seasonArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    inv.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                }
+                break;
+            case GetStaticData.TYPE_BUSINESS:
+                result.label = Arrays.asList(GetStaticData.yearArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    inv.add(GetStaticData.DATA_S_EST[random.nextInt(8)]);
+                }
+                break;
+        }
+        result.inventory = inv;
+        return result;
+    }
+
+    /**
+     * 稽查统计
+     * @param type
+     * @return
+     */
+    private static CheckStatistics getCheck(int type) {
+        Random random = new Random();
+        CheckStatistics result = new CheckStatistics();
+
+        List<Integer> check = new ArrayList<>();
+        List<Integer> fakes = new ArrayList<>();
+        List<Integer> mix = new ArrayList<>();
+
+        switch (type) {
+            case GetStaticData.TYPE_DAY:
+                result.label = Arrays.asList(GetStaticData.dayArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    check.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                    fakes.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                    mix.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                }
+                break;
+            case GetStaticData.TYPE_MONTH:
+                result.label = Arrays.asList(GetStaticData.monthArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    check.add(GetStaticData.DATA_B[random.nextInt(8)]);
+                    fakes.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                    mix.add(GetStaticData.DATA_S[random.nextInt(8)] - 500);
+                }
+                break;
+            case GetStaticData.TYPE_YEAR:
+                result.label = Arrays.asList(GetStaticData.yearArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    check.add(GetStaticData.DATA_B_EST[random.nextInt(8)]);
+                    fakes.add(GetStaticData.DATA_B[random.nextInt(8)]);
+                    mix.add(GetStaticData.DATA_B[random.nextInt(8)]);
+                }
+                break;
+        }
+
+        result.check = check;
+        result.fakes = fakes;
+        result.mix = mix;
+        return result;
+    }
+
+    /**
+     *举报统计
+     * @param type
+     * @return
+     */
+    private static ReportStatistics getReport(int type) {
+        Random random = new Random();
+        ReportStatistics result = new ReportStatistics();
+        List<Integer> report = new ArrayList<>();
+        switch (type) {
+            case GetStaticData.TYPE_DAY:
+                result.label = Arrays.asList(GetStaticData.dayArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    report.add(GetStaticData.DATA_S_ER[random.nextInt(8)]);
+                }
+
+                break;
+            case GetStaticData.TYPE_MONTH:
+                result.label = Arrays.asList(GetStaticData.monthArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    report.add(GetStaticData.DATA_S[random.nextInt(8)]);
+                }
+
+                break;
+            case GetStaticData.TYPE_YEAR:
+                result.label = Arrays.asList(GetStaticData.yearArr);
+                for (int i = 0; i < result.label.size(); i++) {
+                    report.add(GetStaticData.DATA_B[random.nextInt(8)]);
+                }
+                break;
+        }
+        result.report = report;
+        return result;
+    }
+
+    /**
+     * 商业公司--地图数据
+     * @param context
+     * @param type 请求数据级别
+     * @param value 省份（获得城市级别）
+     * @return
+     */
+    public static ResponseBusinessCompany getResBusinessCompany(Context context,int type,String value){
+        Random random = new Random();
+        ResponseBusinessCompany result = new ResponseBusinessCompany();
+        List<BusinessCompany> company = new ArrayList<>();
+
+        BusinessCompanyData data=getBusinessCompanyData(context);
+        switch(type){
+            case Constants.Area.COUNTRY:
+                BusinessCompany country = new BusinessCompany();
+                country.quantity=data.provinceList.size(); //共多少家烟草专卖局
+                country.planNum=5000.0;//计划多少箱
+                country.factNum=4780.0;//实际多少箱
+                country.longitude="116.470834";
+                country.latitude="39.875466";
+                company.add(country);
+                break;
+            case Constants.Area.PROVINCE:
+                for(BusinessCompany temp:data.provinceList){
+                    temp.quantity=data.cityMap.get(temp.province).size(); //共多少家烟草专卖局
+                    temp.planNum=GetStaticData.DATA_S_ER[random.nextInt(8)]+200.0;//计划多少箱
+                    temp.factNum=GetStaticData.DATA_S_ER[random.nextInt(8)]+120.0;//实际多少箱
+                    temp.purchase = GetStaticData.DATA_S_ER[random.nextInt(8)]*2.0;//进货
+                    temp.sale=GetStaticData.DATA_S_ER[random.nextInt(8)]+220.0;//销售
+                    temp.inventory=GetStaticData.DATA_B[random.nextInt(8)]+0.0;//存货
+                    company.add(temp);
+                }
+
+                break;
+            case Constants.Area.CITY:
+                for(BusinessCompany temp:data.cityMap.get(value)){
+                    temp.planNum=GetStaticData.DATA_S_EST[random.nextInt(8)]+60.0;//计划多少箱
+                    temp.factNum=GetStaticData.DATA_S_EST[random.nextInt(8)]+53.0;//实际多少箱
+                    temp.purchase = GetStaticData.DATA_S_EST[random.nextInt(8)]+50.0;//进货
+                    temp.sale=GetStaticData.DATA_S_ER[random.nextInt(8)]+50.0;//销售
+                    temp.inventory=GetStaticData.DATA_S[random.nextInt(8)]-120.0;//存货
+                    temp.inTransitCar=GetStaticData.DATA_S_EST[random.nextInt(8)]-5;//在途车辆数
+                    temp.inTransitNum=GetStaticData.DATA_S_ER[random.nextInt(8)]*2;//在途数
+                    company.add(temp);
+                }
+                break;
+        }
+        result.company=company;
+
+        return result;
+    }
+
+    /**
+     * 商业公司--进/销 图表数据
+     * @param type
+     * @param value
+     * @return
+     */
+    public static ResponseBusinessCompanyAmount getResBusinessCompanyAmount( int type, String value){
+        Random random = new Random();
+        ResponseBusinessCompanyAmount result = new ResponseBusinessCompanyAmount();
+        PlanCompleteAmount amount = new PlanCompleteAmount();
+        amount.label = Arrays.asList(GetStaticData.monthArr);
+        List<Integer> plan = new ArrayList<>();
+        List<Integer> fact = new ArrayList<>();
+
+        switch(type){
+            case Constants.Area.PROVINCE:
+                result.plan=GetStaticData.DATA_S_ER[random.nextInt(8)]+200.0;
+                result.fact=result.plan-90.0;
+
+                for (int i = 0; i < amount.label.size(); i++) {
+                    plan.add(GetStaticData.DATA_S_ER[random.nextInt(8)]+200);
+                    fact.add(plan.get(i) - 100);
+                }
+                break;
+            case Constants.Area.CITY:
+                result.plan=GetStaticData.DATA_S_ER[random.nextInt(8)]+0.0;
+                result.fact=result.plan-11.0;
+
+                for (int i = 0; i < amount.label.size(); i++) {
+                    plan.add(GetStaticData.DATA_S_ER[random.nextInt(8)]-11);
+                    fact.add(plan.get(i) - 21);
+                }
+                break;
+        }
+
+        amount.plan = plan;
+        amount.complete = fact;
+        result.amount = amount;
+
+        return result;
+    }
+
+    /**
+     * 商业公司--存 图表数据
+     * @param type
+     * @param value
+     * @return
+     */
+    public static ResponseBusinessCompanyInventory getResBusinessCompanyInventory( int type, String value){
+        Random random = new Random();
+        ResponseBusinessCompanyInventory result = new ResponseBusinessCompanyInventory();
+        List<Invoicing> invoicing = new ArrayList<>();
+
+        switch(type){
+            case Constants.Area.PROVINCE:
+                result.inventory=GetStaticData.DATA_B[random.nextInt(8)];
+                for (int i =0;i<5;i++){
+                    Invoicing temp= new Invoicing();
+                    temp.batch = "20150101000"+i%2+i;
+                    temp.purchase = GetStaticData.DATA_S_ER[random.nextInt(8)]+200;
+                    temp.sale = temp.purchase-i*(15+i);
+                    temp.inventory = i*(10-i);
+                    invoicing.add(temp);
+                }
+
+                break;
+            case Constants.Area.CITY:
+                result.inventory=GetStaticData.DATA_S[random.nextInt(8)];
+                for (int i =0;i<5;i++){
+                    Invoicing temp= new Invoicing();
+                    temp.batch = "20150101000"+i%2+i;
+                    temp.purchase = GetStaticData.DATA_S_ER[random.nextInt(8)]-100;
+                    temp.sale = temp.purchase-i*(10+i);
+                    temp.inventory = i*(10-i);
+                    invoicing.add(temp);
+                }
+                break;
+        }
+        result.invoicing=invoicing;
+
+        return result;
+    }
+
+    private static BusinessCompanyData getBusinessCompanyData(Context context){
+
+        RegionData area = getAreaClass(context);
+
+
+        String jsonStr = FileUtils.readAssetsFile(context,"t_business_company.json");
+
+        BusinessCompanyData result = new BusinessCompanyData();
+        List<BusinessCompany> provinceList= new ArrayList<>() ;
+        Map<String,List<BusinessCompany>> cityMap = new HashMap<>();
+        if(jsonStr != null && !"".equalsIgnoreCase(jsonStr.trim())){
+            List<BusinessCompany> jsonList= JSONArray.parseArray(jsonStr,BusinessCompany.class);
+
+
+            for (BusinessCompany temp:jsonList) {
+                switch(temp.type){
+                    case 0:
+                        for(RegionJson province:area.provinceList){
+                            if(province.zipcode==temp.province){
+                                temp.provinceName = province.name;
+                                break;
+                            }
+                        }
+                        provinceList.add(temp);
+                        break;
+                    case 1:
+                        List<BusinessCompany> cityList= new ArrayList<>();
+                        if(cityMap.containsKey(temp.province)){
+                            cityList = cityMap.get(temp.province);
+                        }
+                        for(RegionJson city:area.cityMap.get(temp.province)){
+                            if(city.zipcode==temp.city){
+                                temp.cityName = city.name;
+                                break;
+                            }
+                        }
+                        cityMap.put(temp.province,cityList);
+                        break;
+                }
+
+            }
+
+        }
+
+        result.provinceList = provinceList;
+        result.cityMap = cityMap;
+
+        return result;
+    }
+
+    private static RegionData getAreaClass(Context context){
+
+        String jsonStr = FileUtils.readAssetsFile(context,"china-city-area-zip.min.json");
+        RegionData result = new RegionData();
+
+        List<RegionJson> provinceList = new ArrayList<>();
+        Map<String,List<RegionJson>> cityMap = new HashMap<>();
+        Map<String,List<RegionJson>> areaMap = new HashMap<>();
+        if(jsonStr != null && !"".equalsIgnoreCase(jsonStr.trim())){
+            List<RegionJson> jsonList= JSONArray.parseArray(jsonStr,RegionJson.class);
+            for (RegionJson t_province:jsonList) {
+                //省
+                List<RegionJson> cityList= new ArrayList<>();
+                for (RegionJson t_city: t_province.child) {
+                    //市
+                    cityList.add(t_city);
+                    List<RegionJson> areaList= new ArrayList<>();
+                    for (RegionJson t_area: t_city.child) {
+                        //区
+                        areaList.add(t_area);
+                    }
+                    areaMap.put(t_city.zipcode,areaList);
+                }
+                provinceList.add(t_province);
+                cityMap.put(t_province.zipcode,cityList);
+            }
+        }
+        result.provinceList=provinceList;
+        result.cityMap=cityMap;
+        result.areaMap = areaMap;
+        return result;
+    }
+
+    private static String getToday() {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd", Locale.CHINA);
+        return sdf.format(new Date());
+    }
+}
